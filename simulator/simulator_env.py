@@ -78,6 +78,7 @@ class Simulator:
         self.finish_run_step = int((self.t_end - self.t_initial) // self.delta_t)
 
         # request tables
+        # TODO: add a column that indicates whether this vehicle is premium or not
         self.request_columns = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
                                 'trip_distance', 'start_time', 'origin_grid_id','dest_grid_id', 'itinerary_node_list',
                                 'itinerary_segment_dis_list', 'trip_time', 'cancel_prob', 't_matched',
@@ -88,6 +89,7 @@ class Simulator:
         self.matched_requests = None
 
         # driver tables
+        # TODO: add a column that indicates whether this vehicle is premium or not
         self.driver_columns = ['driver_id', 'start_time', 'end_time', 'lng', 'lat', 'grid_id', 'status',
                                'target_loc_lng', 'target_loc_lat', 'target_grid_id', 'remaining_time',
                                'matched_order_id', 'total_idle_time', 'time_to_last_cruising', 'current_road_node_index',
@@ -1194,6 +1196,7 @@ class Simulator:
         driver_table = deepcopy(self.driver_table)
         time1 = time.time()
         # print("order duplicated flag:",wait_requests.order_id.duplicated().sum())
+        # TODO: switch the dispatch method to broadcasting
         matched_pair_actual_indexes, matched_itinerary = order_dispatch(wait_requests, driver_table,
                                                                         self.maximal_pickup_distance,
                                                                       self.dispatch_method,self.method)

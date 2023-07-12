@@ -18,6 +18,8 @@ import pymongo
 import time
 import scipy.stats as st
 from scipy.stats import skewnorm
+import Broadcasting
+from Driver_behavour import train_model
 """
 Here, we load the information of graph network from graphml file.
 """
@@ -628,6 +630,84 @@ def calculate_hk_price(dis):
     else:
         return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200))
 
+def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',
+                   lr_model=train_model(), mlp_model=None,cur_time=0):
+    """
+    :param wait_requests: the requests of orders
+    :type wait_requests: pandas.DataFrame
+    :param driver_table: the information of online drivers
+    :type driver_table:  pandas.DataFrame
+    :param maximal_pickup_distance: maximum of pickup distance
+    :type maximal_pickup_distance: int
+    :param dispatch_method: the method of order dispatch
+    :type dispatch_method: string
+    :return: matched_pair_actual_indexs: order and driver pair, matched_itinerary: the itinerary of matched driver
+    :rtype: tuple
+    """
+    con_ready_to_dispatch = (driver_table['status'] == 0) | (driver_table['status'] == 4)
+    idle_driver_table = driver_table[con_ready_to_dispatch]
+    num_wait_request = wait_requests.shape[0]  # padas.DataFrame二维表格数据，shape[0]返回行数
+    num_idle_driver = idle_driver_table.shape[0]
+    matched_pair_actual_indexs = []
+    matched_itinerary = []
+    new_all_requests = pd.DataFrame(columns=['origin_lng', 'origin_lat', 'order_id', 'reward_units', 'origin_grid_id', 'driver_id',
+                    'pick_up_distance','time','time_period','num_wait_requests','num_available_drivers','radius','match_state'])
+    if num_wait_request > 0 and num_idle_driver > 0:
+        if dispatch_method == 'LD':
+            # generate order driver pairs and corresponding itinerary
+            request_array_temp = wait_requests.loc[:,
+                                 ['origin_lng', 'origin_lat', 'order_id', 'weight', 'origin_grid_id']]  # loc取列
+
+            request_array = np.repeat(request_array_temp.values, num_idle_driver,
+                                      axis=0)  # 复制(input_array,repeat_num,axis)
+            driver_loc_array_temp = idle_driver_table.loc[:, ['lng', 'lat', 'driver_id']]
+            driver_loc_array = np.tile(driver_loc_array_temp.values, (num_wait_request, 1))
+            # itinerary_node_list, itinerary_segment_dis_list, dis_array = route_generation_array(request_array[:, :2],
+            #                                                                                     driver_loc_array[:, :2],
+            #                                                                                   mode='drop_end')
+
+            dis_array = distance_array(request_array[:, :2], driver_loc_array[:, :2])
+            order_driver_pair = np.vstack(
+                [request_array[:, 0], request_array[:, 1], request_array[:, 2], request_array[:, 3],
+                 request_array[:, 4], driver_loc_array[:, 2], dis_array[:]]).T
+
+            # print("the shape of order_driver_pair",order_driver_pair.shape)
+            # flag = np.where(dis_array <= maximal_pickup_distance)[0]
+            # if len(flag) > 0:
+            #     order_driver_pair = np.vstack(
+            #         [request_array[flag, 2], driver_loc_array[flag, 2], request_array[flag, 3], dis_array[flag]]).T
+            matched_pair_actual_indexs,new_all_requests = Broadcasting.dispatch_broadcasting(order_driver_pair.tolist(), dis_array,
+                                                                            lr_model, mlp_model,cur_time,driver_table)
+            # matched_pair_actual_indexs = LD(order_driver_pair.tolist())
+            if len(matched_pair_actual_indexs) == 0:
+                return [], [], new_all_requests
+            else:
+                request_indexs = np.array(matched_pair_actual_indexs)[:, 0]
+                driver_indexs = np.array(matched_pair_actual_indexs)[:, 1]
+
+            request_indexs_new = []
+            driver_indexs_new = []
+
+            for index in request_indexs:
+                request_indexs_new.append(
+                    request_array_temp[request_array_temp['order_id'] == int(index)].index.tolist()[0])
+            for index in driver_indexs:
+                # print("len =", len(driver_loc_array_temp))
+                # print(driver_loc_array_temp['driver_id'] == index)
+                driver_indexs_new.append(
+                    driver_loc_array_temp[driver_loc_array_temp['driver_id'] == index].index.tolist()[0])
+            request_array_new = np.array(request_array_temp.loc[request_indexs_new])[:, :2]
+            driver_loc_array_new = np.array(driver_loc_array_temp.loc[driver_indexs_new])[:, :2]
+            itinerary_node_list, itinerary_segment_dis_list, dis_array = route_generation_array(
+                driver_loc_array_new, request_array_new, mode=env_params['pickup_mode'])
+
+            matched_itinerary = [itinerary_node_list, itinerary_segment_dis_list, dis_array]
+            # print('matched_pair_actual_indexs =',len(matched_pair_actual_indexs))
+            # print('np.array(matched_itinerary =',len(np.array(matched_itinerary)))
+    # print("========utilitty========")
+    # print(new_all_requests['time'])
+    return matched_pair_actual_indexs, np.array(matched_itinerary), new_all_requests
+
 
 def order_dispatch(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',rl_mode='pickup_distance'):
     """
@@ -652,8 +732,10 @@ def order_dispatch(wait_requests, driver_table, maximal_pickup_distance=950, dis
     if num_wait_request > 0 and num_idle_driver > 0:
         if dispatch_method == 'LD':
             # generate order driver pairs and corresponding itinerary
-            request_array_temp = wait_requests.loc[:, ['origin_lng', 'origin_lat', 'order_id', 'weight']]
-            request_array = np.repeat(request_array_temp.values, num_idle_driver, axis=0)
+            request_array_temp = wait_requests.loc[:, 
+                                                   ['origin_lng', 'origin_lat', 'order_id', 'weight']]
+            request_array = np.repeat(request_array_temp.values, num_idle_driver,
+                                      axis=0)
             driver_loc_array_temp = idle_driver_table.loc[:, ['lng', 'lat', 'driver_id']]
             driver_loc_array = np.tile(driver_loc_array_temp.values, (num_wait_request, 1))
             dis_array = distance_array(request_array[:, :2], driver_loc_array[:, :2])
