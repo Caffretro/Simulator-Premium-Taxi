@@ -179,18 +179,8 @@ class Simulator:
                                             np.array([]).astype(float)]  # rl for matching
         self.requests = pd.DataFrame(request_list,columns=column_name)
         trip_distance = self.requests['trip_distance'].values.tolist()
-        reward_list = []
-        for dis in trip_distance:
-            # reward_list.append(2.5 + 0.5 * int(max(0,dis*1000-322)/322))
-            # Changed to Hong Kong pricing rule
-            if dis <= 2.0:
-                price = 27
-            elif dis > 2.0 and dis <= 7.0:
-                price = 27 + 1.9 * (int((dis - 2.0) * 1000) // 200)
-            else:
-                price = 93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)
-            reward_list.append(price)
-        self.requests['designed_reward'] = reward_list
+        
+        self.requests['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
         self.requests['trip_time']  = self.requests['trip_distance'] / self.vehicle_speed * 3600
         self.requests['matching_time'] = 0
         self.requests['pickup_end_time'] = 0
@@ -271,16 +261,13 @@ class Simulator:
         new_matched_requests = pd.DataFrame([], columns=self.request_columns)
         update_wait_requests = pd.DataFrame([], columns=self.request_columns)
         matched_pair_index_df = pd.DataFrame(matched_pair_actual_indexes, columns=['order_id', 'driver_id', 'weight', 'pickup_distance'])
-        # print("after order matched")
-        # print("order duplicated flag:",matched_pair_index_df.order_id.duplicated().sum())
-        # print("driver duplicated flag",matched_pair_index_df.driver_id.duplicated().sum())
-        # matched_pair_index_df = matched_pair_index_df.drop(columns=['flag'])
         matched_itinerary_df = pd.DataFrame(columns=['itinerary_node_list', 'itinerary_segment_dis_list', 'pickup_distance'])
         if len(matched_itinerary) > 0:
             matched_itinerary_df['itinerary_node_list'] = matched_itinerary[0]
             matched_itinerary_df['itinerary_segment_dis_list'] = matched_itinerary[1]
             matched_itinerary_df['pickup_distance'] = matched_itinerary[2]
 
+        # extract the orders that are matched and not expired
         matched_order_id_list = matched_pair_index_df['order_id'].values.tolist()
         con_matched = self.wait_requests['order_id'].isin(matched_order_id_list)
         con_keep_wait = self.wait_requests['wait_time'] <= self.wait_requests['maximum_wait_time']
@@ -291,12 +278,14 @@ class Simulator:
         # extract the order is matched
         df_matched = self.wait_requests[con_matched].reset_index(drop=True)
         if df_matched.shape[0] > 0:
+            # if there are matched orders, update the driver table
             idle_driver_table = self.driver_table[(self.driver_table['status'] == 0) | (self.driver_table['status'] == 4)]
             order_array = df_matched['order_id'].values
             cor_order = []
             cor_driver = []
             for i in range(len(matched_pair_index_df)):
                 cor_order.append(np.argwhere(order_array == matched_pair_index_df['order_id'][i])[0][0])
+                # cor_driver contains idle drivers that are matched
                 cor_driver.append(idle_driver_table[idle_driver_table['driver_id'] == matched_pair_index_df['driver_id'][i]].index[0])
             cor_driver = np.array(cor_driver)
             df_matched = df_matched.iloc[cor_order, :]
@@ -311,10 +300,10 @@ class Simulator:
             con_passenge_keep_wait = df_matched['maximum_pickup_time_passenger_can_tolerate'].values > \
                                                         matched_itinerary_df['pickup_time'].values
 
-
+            # passengers may cancel, drivers may also cancel. we only record uncancelled matches
             con_passenger_remain = con_passenge_keep_wait
             con_remain = con_driver_remain & con_passenger_remain
-            # order after cancelled
+            # order after cancelled, filter out matched requests
             update_wait_requests = df_matched[~con_remain]
 
             # driver after cancelled
@@ -504,25 +493,9 @@ class Simulator:
                 # wait_info['designed_reward'] = 2.5 + 0.5 * int(max(0,trip_distance*1000-322)/322)
                 reward_list = []
                 if self.rl_mode == 'matching':
-                    for dis in trip_distance:
-                        if dis <= 2.0:
-                            price = 27
-                        elif dis > 2.0 and dis <= 7.0:
-                            price = 27 + 1.9 * (int((dis - 2.0) * 1000) // 200)
-                        else:
-                            price = 93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)
-                        reward_list.append(price)
-                    wait_info['designed_reward'] = reward_list
+                    wait_info['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
                 elif self.rl_mode == 'reposition':
-                    for dis in trip_distance:
-                        if dis <= 2.0:
-                            price = 27
-                        elif dis > 2.0 and dis <= 7.0:
-                            price = 27 + 1.9 * (int((dis - 2.0) * 1000) // 200)
-                        else:
-                            price = 93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)
-                        reward_list.append(price)
-                    wait_info['designed_reward'] = reward_list
+                    wait_info['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
                     # wait_info['designed_reward'] = 2.5 + 0.5 * int(max(0,trip_distance-322)/322)
                     wait_info['immediate_reward'] = 0
                 # TJ
@@ -629,16 +602,6 @@ class Simulator:
                 wait_info['trip_distance'] = trip_distance
                 wait_info['trip_time'] = wait_info['trip_distance'] / self.vehicle_speed * 3600
                 wait_info['itinerary_segment_dis_list'] = itinerary_segment_dis_list
-                # reward_list = []
-                # for dis in trip_distance:
-                #     # Changed to Hong Kong pricing rule
-                #     if dis <= 2.0:
-                #         price = 27
-                #     elif dis > 2.0 and dis <= 7.0:
-                #         price = 27 + 1.9 * (int((dis - 2.0) * 1000) // 200)
-                #     else:
-                #         price = 93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)
-                #     reward_list.append(calculate_hk_price(dis))
                 #reward_list *= (1 + env_params['price_increasing_percentage'])
                 wait_info['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
             # transfer_flag_array = np.zeros(len(self.request_database))
@@ -698,7 +661,7 @@ class Simulator:
 
                 wait_info['maximum_wait_time'] = self.maximum_wait_time_mean
                 # TODO: checking 6 mins result. 
-                wait_info['maximum_pickup_time_passenger_can_tolerate'] = 360 # 5 mins
+                wait_info['maximum_pickup_time_passenger_can_tolerate'] = 360 # 6 mins
 
                 wait_info['weight'] = weight_array # rl for matching
                 # add extra info of orders
@@ -722,8 +685,7 @@ class Simulator:
                 wait_info = wait_info[wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']]
                 self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
             
-                # FIXME: check wait_request length
-                # print(f"number of requests: {len(self.wait_requests)}")
+                
 
                 # statistics
                 self.total_request_num += wait_info.shape[0]
@@ -1181,7 +1143,7 @@ class Simulator:
 
         return self.new_tracks
 
-    def rl_step(self, score_agent={}, epsilon=0): # rl for matching
+    def step(self, lr_model, mlp_model, score_agent={}, epsilon=0): # rl for matching
         """
         This function used to run the simulator step by step
         :return:
@@ -1196,10 +1158,16 @@ class Simulator:
         driver_table = deepcopy(self.driver_table)
         time1 = time.time()
         # print("order duplicated flag:",wait_requests.order_id.duplicated().sum())
-        # TODO: switch the dispatch method to broadcasting
-        matched_pair_actual_indexes, matched_itinerary = order_dispatch(wait_requests, driver_table,
+        # TODO: switch the dispatch method to broadcasting, check if this code works
+        # matched_pair_actual_indexes, matched_itinerary = order_dispatch(wait_requests, driver_table,
+        #                                                                 self.maximal_pickup_distance,
+        #                                                               self.dispatch_method,self.method)
+        
+
+        matched_pair_actual_indexes, matched_itinerary = order_dispatch_broadcasting(wait_requests, driver_table,
                                                                         self.maximal_pickup_distance,
-                                                                      self.dispatch_method,self.method)
+                                                                      self.dispatch_method,lr)
+        
         # self.matched_requests_num += len(matched_pair_actual_indexes)
         time2 = time.time()
         self.time_step1 += (time2 - time1)
@@ -1227,7 +1195,6 @@ class Simulator:
         time3 = time.time()
         self.time_step2 += (time3 - time2)
         
-        # self.total_reward += np.sum(df_new_matched_requests['immediate_reward'].values)
         # TJ
         if len(df_new_matched_requests) != 0:
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
