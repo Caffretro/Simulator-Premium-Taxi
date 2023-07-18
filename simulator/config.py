@@ -38,6 +38,7 @@ env_params = {
 'price_per_km':5,  # ￥ / kmss
 'road_information_mode':'load',
 'price_increasing_percentage': 0.2,
+'premium_taxi_increasing_coefficient': 1.2, # assume premium taxi is 20% more expensive than normal taxi
 'north_lat': 22.55,
 'south_lat': 22.13,
 'east_lng': 114.42,

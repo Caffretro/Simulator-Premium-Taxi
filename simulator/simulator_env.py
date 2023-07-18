@@ -4,7 +4,7 @@ from simulator_pattern import *
 from utilities import *
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 import sys
-from config import sarsa_params
+from config import sarsa_params, env_params
 
 class Simulator:
     def __init__(self, **kwargs):
@@ -20,7 +20,7 @@ class Simulator:
         self.rl_mode = kwargs['rl_mode']
         self.zone_id_array = np.array([i for i in range(side**2)])
         self.requests  = None
-        self.record =""
+        self.record = ""
 
         # order generation
         self.order_sample_ratio = kwargs['order_sample_ratio']

@@ -622,13 +622,21 @@ def skewed_normal_distribution_3_param(a, loc, scale, size):
     return skewnorm.rvs(a, loc, scale, size)
 
 
-def calculate_hk_price(dis):
-    if dis <= 2.0:
-        return 27
-    elif dis > 2.0 and dis <= 7.0:
-        return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200))
+def calculate_hk_price(dis, premium=False):
+    if premium:
+        if dis <= 2.0:
+            return 27 * env_params["premium_taxi_increasing_coefficient"]
+        elif dis > 2.0 and dis <= 7.0:
+            return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
+        else:
+            return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
     else:
-        return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200))
+        if dis <= 2.0:
+            return 27
+        elif dis > 2.0 and dis <= 7.0:
+            return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200))
+        else:
+            return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200))
 
 def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',
                    lr_model=train_model(), mlp_model=None,cur_time=0):

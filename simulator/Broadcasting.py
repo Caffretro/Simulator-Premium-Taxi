@@ -45,6 +45,7 @@ def normalization(data):
     result = (data - data.min()) / scale
     return result
 
+# TODO: check whether this is the place to load the checkpoint
 driver_behaviour_scalar = pickle.load(open('./input/driver_behaviour_scaler.pkl', 'rb'))
 # @jit(nopython=True)
 def driver_decision(distance, reward, lr_model):
