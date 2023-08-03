@@ -11,7 +11,6 @@ import os
 from utilities import *
 from sarsa import SarsaAgent
 from matplotlib import pyplot as plt
-from Driver_behavour import train_model
 
 if __name__ == "__main__":
     driver_num = [750]
@@ -90,8 +89,6 @@ if __name__ == "__main__":
                                     waiting_time = 0
 
                                     # load models for broadcasting
-                                    lr_model = train_model()
-                                    mlp_model = None
 
                                     for date in TEST_DATE_LIST:
                                         simulator.experiment_date = date
@@ -103,7 +100,7 @@ if __name__ == "__main__":
                                             # dispatch_transitions = simulator.rl_step(agent)
 
                                             # for full-data testing, no need to store dispatch transition, store track instead.
-                                            new_tracks = simulator.step(agent, lr_model, mlp_model)
+                                            new_tracks = simulator.step(agent)
                                             track_record.append(new_tracks)
                                             
                                             if step % 500 == 0:
