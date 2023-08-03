@@ -19,7 +19,6 @@ import time
 import scipy.stats as st
 from scipy.stats import skewnorm
 import Broadcasting
-from Driver_behavour import train_model
 """
 Here, we load the information of graph network from graphml file.
 """
