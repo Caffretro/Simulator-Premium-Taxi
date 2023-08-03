@@ -101,6 +101,7 @@ class Simulator:
         self.driver_info = pattern.driver_info
         # TODO: add a column that indicates whether this vehicle is premium or not
         self.driver_info['premium'] = 0
+
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
         self.request_all = pattern.request_all
         self.request_databases = None
@@ -183,6 +184,7 @@ class Simulator:
 
         # TODO: Added column for recording whether the order is premium or not
         self.requests['accept_premium'] = 0
+
         trip_distance = self.requests['trip_distance'].values.tolist()
         
         self.requests['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
@@ -1168,7 +1170,11 @@ class Simulator:
         #                                                                 self.maximal_pickup_distance,
         #                                                               self.dispatch_method,self.method)
         
-
+        '''
+            TODO: figure out if we can use the broadcasting method to match premium taxis first,
+            then combine results with the normal taxis
+            don't forget pricing
+        '''
         matched_pair_actual_indexes, matched_itinerary = order_dispatch_broadcasting(wait_requests, driver_table,
                                                                         self.maximal_pickup_distance,
                                                                       self.dispatch_method)

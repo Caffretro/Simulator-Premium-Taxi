@@ -652,8 +652,10 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
     :return: matched_pair_actual_indexs: order and driver pair, matched_itinerary: the itinerary of matched driver
     :rtype: tuple
     """
+    # check driver status and create idle driver table
     con_ready_to_dispatch = (driver_table['status'] == 0) | (driver_table['status'] == 4)
     idle_driver_table = driver_table[con_ready_to_dispatch]
+    # count the number of wait requests and idle drivers, create return value containers
     num_wait_request = wait_requests.shape[0]  # pandas.DataFrame二维表格数据，shape[0]返回行数
     num_idle_driver = idle_driver_table.shape[0]
     matched_pair_actual_indexs = []
@@ -663,30 +665,69 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
     if num_wait_request > 0 and num_idle_driver > 0:
         if dispatch_method == 'LD':
             # TODO: figure out how to match premium orders first
+            ''' 
+                we can do the following steps:
+                1. select premium orders first by only stacking premium orders and premium drivers
+                2. send the premium order driver stack to Broadcasting function
+                3. after receiving matched premium pairs, filter the matched orders and drivers from wait_request and driver_table
+                4. rebuild a new order driver stack by stacking the remaining orders and drivers
+                5. send the remaining order driver stack to Broadcasting function
+                6. combine both matching results
+            '''
             # generate order driver pairs and corresponding itinerary
+
+            # 1. select premium orders and premium drivers first
+            premium_request_array_temp = wait_requests.loc[wait_requests['accept_premium'] == 1,
+                                       ['origin_lng', 'origin_lat', 'order_id', 'weight', 'origin_grid_id']]
+            premium_driver_loc_array_temp = idle_driver_table.loc[idle_driver_table['premium'] == 1, ['lng', 'lat', 'driver_id']]
+            num_premium_wait_request = len(premium_request_array_temp)
+            num_premium_idle_driver = len(premium_driver_loc_array_temp)
+            premium_request_array = np.repeat(request_array_temp.values, num_premium_idle_driver, axis=0)
+            premium_driver_loc_array = np.tile(driver_loc_array_temp.values, (num_premium_wait_request, 1))
+
+            premium_dis_array = distance_array(premium_request_array[:, :2], premium_driver_loc_array[:, :2])
+
+            premium_order_driver_pair = np.vstack(
+                [premium_request_array[:, 0], premium_request_array[:, 1], premium_request_array[:, 2], premium_request_array[:, 3],
+                premium_request_array[:, 4], premium_driver_loc_array[:, 2], premium_dis_array[:]]).T
+            # 2. send the premium order driver stack to Broadcasting function
+            premium_matched_pair_actual_indexs = Broadcasting.dispatch_broadcasting(premium_order_driver_pair.tolist(), premium_dis_array)
+            '''
+                result may look like this:
+                order_id, driver_id, reward, distance
+                [
+                    [1, 'driver_1', 10.0, 0.5],
+                    [2, 'driver_2', 12.0, 0.5],
+                ]
+            '''
+            # 3. exclude the matched orders and drivers from wait_request and driver_table
+
+            matched_premium_order_ids = [item[0] for item in premium_matched_pair_actual_indexs]
+            matched_premium_driver_ids = [item[1] for item in premium_matched_pair_actual_indexs]
+
             request_array_temp = wait_requests.loc[:,
                                  ['origin_lng', 'origin_lat', 'order_id', 'weight', 'origin_grid_id']]  # loc取列
-
+            driver_loc_array_temp = idle_driver_table.loc[:, ['lng', 'lat', 'driver_id']]
+            # exclude already matched premium drivers and orders
+            request_array_temp = request_array_temp[~request_array_temp['order_id'].isin(matched_premium_order_ids)]
+            driver_loc_array_temp = driver_loc_array_temp[~driver_loc_array_temp['driver_id'].isin(matched_premium_driver_ids)]
+            # 4. rebuild a new order driver stack by stacking the remaining orders and drivers
             request_array = np.repeat(request_array_temp.values, num_idle_driver,
                                       axis=0)  # 复制(input_array,repeat_num,axis)
-            driver_loc_array_temp = idle_driver_table.loc[:, ['lng', 'lat', 'driver_id']]
             driver_loc_array = np.tile(driver_loc_array_temp.values, (num_wait_request, 1))
             # itinerary_node_list, itinerary_segment_dis_list, dis_array = route_generation_array(request_array[:, :2],
             #                                                                                     driver_loc_array[:, :2],
             #                                                                                   mode='drop_end')
-
             dis_array = distance_array(request_array[:, :2], driver_loc_array[:, :2])
             order_driver_pair = np.vstack(
                 [request_array[:, 0], request_array[:, 1], request_array[:, 2], request_array[:, 3],
                  request_array[:, 4], driver_loc_array[:, 2], dis_array[:]]).T
-
-            # print("the shape of order_driver_pair",order_driver_pair.shape)
-            # flag = np.where(dis_array <= maximal_pickup_distance)[0]
-            # if len(flag) > 0:
-            #     order_driver_pair = np.vstack(
-            #         [request_array[flag, 2], driver_loc_array[flag, 2], request_array[flag, 3], dis_array[flag]]).T
+            # 5. send the remaining order driver stack to Broadcasting function
             matched_pair_actual_indexs = Broadcasting.dispatch_broadcasting(order_driver_pair.tolist(), dis_array)
-            # matched_pair_actual_indexs = LD(order_driver_pair.tolist())
+            
+            # 6. combine both matching results, concatnate the matched premium pairs to the matched pairs
+            matched_pair_actual_indexs.extend(premium_matched_pair_actual_indexs)
+
             if len(matched_pair_actual_indexs) == 0:
                 return [], []
             else:

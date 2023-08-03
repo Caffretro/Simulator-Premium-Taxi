@@ -96,5 +96,13 @@ def dispatch_broadcasting(order_driver_info, dis_array,broadcasting_scale=1):
     for item in id_order.tolist():
         if item in matched_dict:
             result.append([item, matched_dict[item][0], matched_dict[item][1], matched_dict[item][2]])
+    '''
+        result may look like this:
+        order_id, driver_id, reward, distance
+        [
+            [1, 'driver_1', 10.0, 0.5],
+            [2, 'driver_2', 12.0, 0.5],
+        ]
+    '''
     return result
 
