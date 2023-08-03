@@ -89,7 +89,7 @@ class Simulator:
         self.matched_requests = None
 
         # driver tables
-        # TODO: add a column that indicates whether this vehicle is premium or not
+        
         self.driver_columns = ['driver_id', 'start_time', 'end_time', 'lng', 'lat', 'grid_id', 'status',
                                'target_loc_lng', 'target_loc_lat', 'target_grid_id', 'remaining_time',
                                'matched_order_id', 'total_idle_time', 'time_to_last_cruising', 'current_road_node_index',
@@ -99,6 +99,8 @@ class Simulator:
 
         # order and driver databases
         self.driver_info = pattern.driver_info
+        # TODO: add a column that indicates whether this vehicle is premium or not
+        self.driver_info['premium'] = 0
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
         self.request_all = pattern.request_all
         self.request_databases = None
@@ -178,6 +180,9 @@ class Simulator:
             self.dispatch_transitions_buffer = [np.array([]).reshape([0, 2]), np.array([]), np.array([]).reshape([0, 2]),
                                             np.array([]).astype(float)]  # rl for matching
         self.requests = pd.DataFrame(request_list,columns=column_name)
+
+        # TODO: Added column for recording whether the order is premium or not
+        self.requests['accept_premium'] = 0
         trip_distance = self.requests['trip_distance'].values.tolist()
         
         self.requests['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
@@ -1166,7 +1171,7 @@ class Simulator:
 
         matched_pair_actual_indexes, matched_itinerary = order_dispatch_broadcasting(wait_requests, driver_table,
                                                                         self.maximal_pickup_distance,
-                                                                      self.dispatch_method,lr)
+                                                                      self.dispatch_method)
         
         # self.matched_requests_num += len(matched_pair_actual_indexes)
         time2 = time.time()

@@ -639,7 +639,7 @@ def calculate_hk_price(dis, premium=False):
             return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200))
 
 def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',
-                   lr_model=train_model(), mlp_model=None,cur_time=0):
+                   cur_time=0):
     """
     :param wait_requests: the requests of orders
     :type wait_requests: pandas.DataFrame
@@ -654,7 +654,7 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
     """
     con_ready_to_dispatch = (driver_table['status'] == 0) | (driver_table['status'] == 4)
     idle_driver_table = driver_table[con_ready_to_dispatch]
-    num_wait_request = wait_requests.shape[0]  # padas.DataFrame二维表格数据，shape[0]返回行数
+    num_wait_request = wait_requests.shape[0]  # pandas.DataFrame二维表格数据，shape[0]返回行数
     num_idle_driver = idle_driver_table.shape[0]
     matched_pair_actual_indexs = []
     matched_itinerary = []
@@ -662,6 +662,7 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
                     'pick_up_distance','time','time_period','num_wait_requests','num_available_drivers','radius','match_state'])
     if num_wait_request > 0 and num_idle_driver > 0:
         if dispatch_method == 'LD':
+            # TODO: figure out how to match premium orders first
             # generate order driver pairs and corresponding itinerary
             request_array_temp = wait_requests.loc[:,
                                  ['origin_lng', 'origin_lat', 'order_id', 'weight', 'origin_grid_id']]  # loc取列
@@ -684,11 +685,10 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
             # if len(flag) > 0:
             #     order_driver_pair = np.vstack(
             #         [request_array[flag, 2], driver_loc_array[flag, 2], request_array[flag, 3], dis_array[flag]]).T
-            matched_pair_actual_indexs,new_all_requests = Broadcasting.dispatch_broadcasting(order_driver_pair.tolist(), dis_array,
-                                                                            lr_model, mlp_model,cur_time,driver_table)
+            matched_pair_actual_indexs = Broadcasting.dispatch_broadcasting(order_driver_pair.tolist(), dis_array)
             # matched_pair_actual_indexs = LD(order_driver_pair.tolist())
             if len(matched_pair_actual_indexs) == 0:
-                return [], [], new_all_requests
+                return [], []
             else:
                 request_indexs = np.array(matched_pair_actual_indexs)[:, 0]
                 driver_indexs = np.array(matched_pair_actual_indexs)[:, 1]
@@ -714,7 +714,7 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
             # print('np.array(matched_itinerary =',len(np.array(matched_itinerary)))
     # print("========utilitty========")
     # print(new_all_requests['time'])
-    return matched_pair_actual_indexs, np.array(matched_itinerary), new_all_requests
+    return matched_pair_actual_indexs, np.array(matched_itinerary)
 
 
 def order_dispatch(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',rl_mode='pickup_distance'):
