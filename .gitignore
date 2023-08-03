@@ -5,7 +5,7 @@ cache/
 input1/
 output*/
 *.pickle
-
+!/simulator/Driver_Behaviour.pickle
 # MacOS
 .DS_Store
 
