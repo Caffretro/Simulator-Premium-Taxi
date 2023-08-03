@@ -78,15 +78,15 @@ class Simulator:
         self.finish_run_step = int((self.t_end - self.t_initial) // self.delta_t)
 
         # request tables
-        # TODO: add a column that indicates whether this vehicle is premium or not
+        # Premium: add a column that indicates whether this vehicle is premium or not
         self.request_columns = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
                                 'trip_distance', 'start_time', 'origin_grid_id','dest_grid_id', 'itinerary_node_list',
                                 'itinerary_segment_dis_list', 'trip_time', 'cancel_prob', 't_matched',
                                 'pickup_time', 'wait_time', 't_end', 'status', 'driver_id', 'maximum_wait_time', 
-                                'pickup_distance']
-                      
-        self.wait_requests = None
-        self.matched_requests = None
+                                'pickup_distance', 'accept_premium']
+        
+        self.wait_requests = None # This is the request pool that bootstrap function will fill value into
+        self.matched_requests = None # This is the matched request pool that step() function will fill value into
 
         # driver tables
         
@@ -99,8 +99,10 @@ class Simulator:
 
         # order and driver databases
         self.driver_info = pattern.driver_info
-        # TODO: add a column that indicates whether this vehicle is premium or not
-        self.driver_info['premium'] = 0
+        # Premium: select  ||'premium_driver_num'||  of the drivers to be premium drivers
+        self.driver_info['premium'] = False
+        self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num']).index, 'premium'] = True
+
 
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
         self.request_all = pattern.request_all
@@ -182,8 +184,8 @@ class Simulator:
                                             np.array([]).astype(float)]  # rl for matching
         self.requests = pd.DataFrame(request_list,columns=column_name)
 
-        # TODO: Added column for recording whether the order is premium or not
-        self.requests['accept_premium'] = 0
+        # Premium: Added column for recording whether the order is premium or not
+        self.requests['accept_premium'] = False
 
         trip_distance = self.requests['trip_distance'].values.tolist()
         
@@ -267,7 +269,7 @@ class Simulator:
             # rl for repositioning
         new_matched_requests = pd.DataFrame([], columns=self.request_columns)
         update_wait_requests = pd.DataFrame([], columns=self.request_columns)
-        matched_pair_index_df = pd.DataFrame(matched_pair_actual_indexes, columns=['order_id', 'driver_id', 'weight', 'pickup_distance'])
+        matched_pair_index_df = pd.DataFrame(matched_pair_actual_indexes, columns=['order_id', 'driver_id', 'weight', 'pickup_distance', 'premium_order'])
         matched_itinerary_df = pd.DataFrame(columns=['itinerary_node_list', 'itinerary_segment_dis_list', 'pickup_distance'])
         if len(matched_itinerary) > 0:
             matched_itinerary_df['itinerary_node_list'] = matched_itinerary[0]
@@ -326,11 +328,16 @@ class Simulator:
             new_matched_requests['t_end'] = self.time + new_matched_requests['pickup_time'].values + new_matched_requests['trip_time'].values
             new_matched_requests['status'] = 1
             new_matched_requests['driver_id'] = matched_pair_index_df[con_remain]['driver_id'].values
+            # Premium: record if the new_matched_requests are premium orders, containing True or False
+            new_matched_requests['premium_order'] = matched_pair_index_df[con_remain]['premium_order'].values
+            # Premium: update premium orders' designed_reward
+            new_matched_requests.loc[new_matched_requests['premium_order'] == True, 'designed_reward'] = \
+                new_matched_requests[new_matched_requests['premium_order'] == True]['designed_reward'].apply(calculate_hk_price_premium)
             self.total_service_time += np.sum(new_matched_requests['trip_time'].values)
             extra_time = new_matched_requests['t_end'].values - self.t_end
             extra_time[extra_time < 0] = 0
             self.total_service_time -= np.sum(extra_time)
-            self.occupancy_rate_no_pickup = self.total_service_time / self.total_online_time         
+            self.occupancy_rate_no_pickup = self.total_service_time / self.total_online_time   
             # print(matched_itinerary_df[con_remain]['trip_distance_distance'].values)
             # new_matched_requests['designed_reward'] = 2.5 + 0.5 * int(max(0,matched_itinerary_df[con_remain]['trip_distance_distance'].values.all()-322)/322)
             # print(new_matched_requests['designed_reward'])
@@ -412,7 +419,7 @@ class Simulator:
                 self.match_and_cancel_track[self.time] = [len(df_matched),len(new_matched_requests)]
                     
 
-
+        # keeping only matched and keep waiting requests
         update_wait_requests = pd.concat([update_wait_requests, self.wait_requests[~con_matched & con_keep_wait]],axis=0)
         # statistics
         long_added = new_matched_requests[new_matched_requests['trip_time'] >= 600].shape[0]
@@ -566,7 +573,7 @@ class Simulator:
                 
                 return
             database_size = len(temp_request)
-            # sample a portion of historical orders
+            # sample a portion of historical orders, if set to 1, nothing happens
             num_request = int(np.rint(self.order_sample_ratio * database_size))
             if num_request <= database_size:
                 sampled_request_index = np.random.choice(database_size, num_request, replace=False).tolist()
@@ -578,7 +585,7 @@ class Simulator:
             weight_array = np.ones(len(sampled_requests))  # rl for matching
             column_name = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
                 'trip_distance', 'start_time', 'origin_grid_id', 'dest_grid_id', 'itinerary_node_list',
-                'itinerary_segment_dis_list', 'trip_time', 'designed_reward', 'cancel_prob']
+                'itinerary_segment_dis_list', 'trip_time', 'designed_reward', 'cancel_prob', 'accept_premium']
             if len(sampled_requests) > 0:
                 itinerary_segment_dis_list = []
                 itinerary_node_list = np.array(sampled_requests)[:, 11]
@@ -603,6 +610,7 @@ class Simulator:
                         print(e)
                         print(itinerary_node)
 
+               
                 wait_info = pd.DataFrame(sampled_requests, columns=column_name)
                 wait_info['itinerary_node_list'] = itinerary_node_list
                 wait_info['start_time'] = self.time
@@ -611,9 +619,11 @@ class Simulator:
                 wait_info['itinerary_segment_dis_list'] = itinerary_segment_dis_list
                 #reward_list *= (1 + env_params['price_increasing_percentage'])
                 wait_info['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
-            # transfer_flag_array = np.zeros(len(self.request_database))
+                # Premium: set portion of orders to accept premium taxis
+                wait_info['accept_premium'] = np.random.choice(\
+                            [True, False], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
+                # transfer_flag_array = np.zeros(len(self.request_database))
                 if self.rl_mode == 'matching':
-
                     #  rl for matching
                     if self.method == 'instant_reward_no_subway':
                         weight_array = wait_info['designed_reward'].values  # deseigned_reward
@@ -667,7 +677,6 @@ class Simulator:
                 # wait_info['maximum_pickup_time_passenger_can_tolerate'] = skewed_normal_distribution(pick_params[0],pick_params[1],pick_params[2],pick_params[3],pick_params[4],len(wait_info)) * 60
 
                 wait_info['maximum_wait_time'] = self.maximum_wait_time_mean
-                # TODO: checking 6 mins result. 
                 wait_info['maximum_pickup_time_passenger_can_tolerate'] = 360 # 6 mins
 
                 wait_info['weight'] = weight_array # rl for matching
@@ -688,8 +697,10 @@ class Simulator:
 
                 # added maximum_price back   
                 # wait_info['maximum_price_passenger_can_tolerate'] += skewed_normal_distribution(price_increase_params[0],price_increase_params[1],price_increase_params[2],price_increase_params[3],price_increase_params[4],len(wait_info))
+                # Premium: this step will exclude some requests for next round, but we need to figure out a way to design premium-acceptor's price
                 wait_info['calculated_hk_price'] = wait_info['trip_distance'].apply(calculate_hk_price)
-                wait_info = wait_info[wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']]
+                # Premium: also keep all premium orderssimple way is to use a OR operation
+                wait_info = wait_info[(wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']) | (wait_info['accept_premium'] == True)]
                 self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
             
                 
@@ -1112,43 +1123,43 @@ class Simulator:
         # rl for matching
         return
 
-    def step(self):
-        """
-        This function used to run the simulator step by step
-        :return:
-        """
-        self.new_tracks = {}
+    # def step(self):
+    #     """
+    #     This function used to run the simulator step by step
+    #     :return:
+    #     """
+    #     self.new_tracks = {}
 
-        # Step 1: order dispatching
-        wait_requests = deepcopy(self.wait_requests)
-        driver_table = deepcopy(self.driver_table)
-        matched_pair_actual_indexes, matched_itinerary = order_dispatch(wait_requests, driver_table, self.maximal_pickup_distance, self.dispatch_method,self.method)
-        # Step 2: driver/passenger reaction after dispatching
-        df_new_matched_requests, df_update_wait_requests = self.update_info_after_matching_multi_process(matched_pair_actual_indexes, matched_itinerary)
-        self.matched_requests = pd.concat([self.matched_requests, df_new_matched_requests], axis=0)
-        self.matched_requests = self.matched_requests.reset_index(drop=True)
-        self.wait_requests = df_update_wait_requests.reset_index(drop=True)
+    #     # Step 1: order dispatching
+    #     wait_requests = deepcopy(self.wait_requests)
+    #     driver_table = deepcopy(self.driver_table)
+    #     matched_pair_actual_indexes, matched_itinerary = order_dispatch(wait_requests, driver_table, self.maximal_pickup_distance, self.dispatch_method,self.method)
+    #     # Step 2: driver/passenger reaction after dispatching
+    #     df_new_matched_requests, df_update_wait_requests = self.update_info_after_matching_multi_process(matched_pair_actual_indexes, matched_itinerary)
+    #     self.matched_requests = pd.concat([self.matched_requests, df_new_matched_requests], axis=0)
+    #     self.matched_requests = self.matched_requests.reset_index(drop=True)
+    #     self.wait_requests = df_update_wait_requests.reset_index(drop=True)
 
-        # Step 3: bootstrap new orders
-        self.order_generation()
+    #     # Step 3: bootstrap new orders
+    #     self.order_generation()
 
-        # Step 4: both-rg-cruising and/or repositioning decision
-        self.cruise_and_reposition()
+    #     # Step 4: both-rg-cruising and/or repositioning decision
+    #     self.cruise_and_reposition()
 
-        # Step 4.1: track recording
-        if self.track_recording_flag:
-            self.real_time_track_recording()
+    #     # Step 4.1: track recording
+    #     if self.track_recording_flag:
+    #         self.real_time_track_recording()
 
-        # Step 5: update next state for drivers
-        self.update_state()
+    #     # Step 5: update next state for drivers
+    #     self.update_state()
 
-        # Step 6： online/offline update()
-        self.driver_online_offline_update()
+    #     # Step 6： online/offline update()
+    #     self.driver_online_offline_update()
 
-        # Step 7: update time
-        self.update_time()
+    #     # Step 7: update time
+    #     self.update_time()
 
-        return self.new_tracks
+    #     return self.new_tracks
 
     def step(self, lr_model, mlp_model, score_agent={}, epsilon=0): # rl for matching
         """
@@ -1175,6 +1186,14 @@ class Simulator:
             then combine results with the normal taxis
             don't forget pricing
         '''
+        '''
+            result of matched_pair_actual_indexes look like this:
+            order_id, driver_id, reward, distance, premium_order
+            [
+                [1, 'driver_1', 10.0, 0.5, True],
+                [2, 'driver_2', 12.0, 0.5, False],
+            ]
+        '''
         matched_pair_actual_indexes, matched_itinerary = order_dispatch_broadcasting(wait_requests, driver_table,
                                                                         self.maximal_pickup_distance,
                                                                       self.dispatch_method)
@@ -1195,6 +1214,7 @@ class Simulator:
         self.per_hour_occupancy_rate[self.hour] = self.per_hour_on_trip_driver_num[self.hour] / (
                     (1 + self.current_step_in_hour) * self.driver_table.shape[0])
         
+        # premium: use df_new_matched_requests['premium_order'] to check a ready-to-bootstrap order is premium or not
         df_new_matched_requests, df_update_wait_requests = self.update_info_after_matching_multi_process(
             matched_pair_actual_indexes, matched_itinerary)
         # print('Number of requests waiting more than 300 secs:', len(df_update_wait_requests[df_update_wait_requests['wait_time'] > 300]))
@@ -1208,11 +1228,13 @@ class Simulator:
         
         # TJ
         if len(df_new_matched_requests) != 0:
+            # premium: already updated reward based on premium_order is True or False
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
         else:
             self.total_reward += 0
         # TJ
         if self.end_of_episode == 0:
+            # here we concatenate the new matched requests with the old ones, and update the global matched requests
             self.matched_requests = pd.concat([self.matched_requests, df_new_matched_requests], axis=0)
             self.matched_requests = self.matched_requests.reset_index(drop=True)
             self.wait_requests = df_update_wait_requests.reset_index(drop=True)

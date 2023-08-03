@@ -622,21 +622,21 @@ def skewed_normal_distribution_3_param(a, loc, scale, size):
     return skewnorm.rvs(a, loc, scale, size)
 
 
-def calculate_hk_price(dis, premium=False):
-    if premium:
-        if dis <= 2.0:
-            return 27 * env_params["premium_taxi_increasing_coefficient"]
-        elif dis > 2.0 and dis <= 7.0:
-            return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
-        else:
-            return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
+def calculate_hk_price(dis):
+    if dis <= 2.0:
+        return 27
+    elif dis > 2.0 and dis <= 7.0:
+        return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200))
     else:
-        if dis <= 2.0:
-            return 27
-        elif dis > 2.0 and dis <= 7.0:
-            return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200))
-        else:
-            return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200))
+        return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200))
+
+def calculate_hk_price_premium(dis):
+    if dis <= 2.0:
+        return 27 * env_params["premium_taxi_increasing_coefficient"]
+    elif dis > 2.0 and dis <= 7.0:
+        return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
+    else:
+        return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
 
 def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',
                    cur_time=0):
@@ -677,9 +677,9 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
             # generate order driver pairs and corresponding itinerary
 
             # 1. select premium orders and premium drivers first
-            premium_request_array_temp = wait_requests.loc[wait_requests['accept_premium'] == 1,
+            premium_request_array_temp = wait_requests.loc[wait_requests['accept_premium'] == True,
                                        ['origin_lng', 'origin_lat', 'order_id', 'weight', 'origin_grid_id']]
-            premium_driver_loc_array_temp = idle_driver_table.loc[idle_driver_table['premium'] == 1, ['lng', 'lat', 'driver_id']]
+            premium_driver_loc_array_temp = idle_driver_table.loc[idle_driver_table['premium'] == True, ['lng', 'lat', 'driver_id']]
             num_premium_wait_request = len(premium_request_array_temp)
             num_premium_idle_driver = len(premium_driver_loc_array_temp)
             premium_request_array = np.repeat(request_array_temp.values, num_premium_idle_driver, axis=0)
@@ -692,6 +692,9 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
                 premium_request_array[:, 4], premium_driver_loc_array[:, 2], premium_dis_array[:]]).T
             # 2. send the premium order driver stack to Broadcasting function
             premium_matched_pair_actual_indexs = Broadcasting.dispatch_broadcasting(premium_order_driver_pair.tolist(), premium_dis_array)
+            # set the premium_order column to true
+            for matched_premium_order in premium_matched_pair_actual_indexs:
+                matched_premium_order.append(True)
             '''
                 result may look like this:
                 order_id, driver_id, reward, distance
@@ -707,7 +710,8 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
 
             request_array_temp = wait_requests.loc[:,
                                  ['origin_lng', 'origin_lat', 'order_id', 'weight', 'origin_grid_id']]  # loc取列
-            driver_loc_array_temp = idle_driver_table.loc[:, ['lng', 'lat', 'driver_id']]
+            # Premium: premium taxis can only take premium orders, but accept_premium drivers can also take normal taxis
+            driver_loc_array_temp = idle_driver_table.loc[idle_driver_table['premium'] == False, ['lng', 'lat', 'driver_id']]
             # exclude already matched premium drivers and orders
             request_array_temp = request_array_temp[~request_array_temp['order_id'].isin(matched_premium_order_ids)]
             driver_loc_array_temp = driver_loc_array_temp[~driver_loc_array_temp['driver_id'].isin(matched_premium_driver_ids)]
@@ -724,7 +728,9 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
                  request_array[:, 4], driver_loc_array[:, 2], dis_array[:]]).T
             # 5. send the remaining order driver stack to Broadcasting function
             matched_pair_actual_indexs = Broadcasting.dispatch_broadcasting(order_driver_pair.tolist(), dis_array)
-            
+            # set the premium_order column to false
+            for matched_regular_order in matched_pair_actual_indexs:
+                matched_regular_order.append(False)
             # 6. combine both matching results, concatnate the matched premium pairs to the matched pairs
             matched_pair_actual_indexs.extend(premium_matched_pair_actual_indexs)
 
