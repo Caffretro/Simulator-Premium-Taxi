@@ -585,7 +585,7 @@ class Simulator:
             weight_array = np.ones(len(sampled_requests))  # rl for matching
             column_name = ['order_id', 'origin_id', 'origin_lat', 'origin_lng', 'dest_id', 'dest_lat', 'dest_lng',
                 'trip_distance', 'start_time', 'origin_grid_id', 'dest_grid_id', 'itinerary_node_list',
-                'itinerary_segment_dis_list', 'trip_time', 'designed_reward', 'cancel_prob', 'accept_premium']
+                'itinerary_segment_dis_list', 'trip_time', 'designed_reward', 'cancel_prob']
             if len(sampled_requests) > 0:
                 itinerary_segment_dis_list = []
                 itinerary_node_list = np.array(sampled_requests)[:, 11]
@@ -610,7 +610,7 @@ class Simulator:
                         print(e)
                         print(itinerary_node)
 
-               
+                # FIXME: Premium: since data it self only has 16 columns, let's remove the last column from column_name first
                 wait_info = pd.DataFrame(sampled_requests, columns=column_name)
                 wait_info['itinerary_node_list'] = itinerary_node_list
                 wait_info['start_time'] = self.time
@@ -1161,7 +1161,7 @@ class Simulator:
 
     #     return self.new_tracks
 
-    def step(self, lr_model, mlp_model, score_agent={}, epsilon=0): # rl for matching
+    def step(self, score_agent={}, epsilon=0): # rl for matching
         """
         This function used to run the simulator step by step
         :return:

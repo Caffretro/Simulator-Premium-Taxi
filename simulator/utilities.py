@@ -681,8 +681,8 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
             premium_driver_loc_array_temp = idle_driver_table.loc[idle_driver_table['premium'] == True, ['lng', 'lat', 'driver_id']]
             num_premium_wait_request = len(premium_request_array_temp)
             num_premium_idle_driver = len(premium_driver_loc_array_temp)
-            premium_request_array = np.repeat(request_array_temp.values, num_premium_idle_driver, axis=0)
-            premium_driver_loc_array = np.tile(driver_loc_array_temp.values, (num_premium_wait_request, 1))
+            premium_request_array = np.repeat(premium_request_array_temp.values, num_premium_idle_driver, axis=0)
+            premium_driver_loc_array = np.tile(premium_driver_loc_array_temp.values, (num_premium_wait_request, 1))
 
             premium_dis_array = distance_array(premium_request_array[:, :2], premium_driver_loc_array[:, :2])
 
