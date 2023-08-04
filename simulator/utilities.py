@@ -696,10 +696,10 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
                 matched_premium_order.append(True)
             '''
                 result may look like this:
-                order_id, driver_id, reward, distance
+                order_id, driver_id, reward, distance, premium_order?
                 [
-                    [1, 'driver_1', 10.0, 0.5],
-                    [2, 'driver_2', 12.0, 0.5],
+                    [1, 'driver_1', 10.0, 0.5, True],
+                    [2, 'driver_2', 12.0, 0.5, True],
                 ]
             '''
             # 3. exclude the matched orders and drivers from wait_request and driver_table
@@ -714,6 +714,10 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
             # exclude already matched premium drivers and orders
             request_array_temp = request_array_temp[~request_array_temp['order_id'].isin(matched_premium_order_ids)]
             driver_loc_array_temp = driver_loc_array_temp[~driver_loc_array_temp['driver_id'].isin(matched_premium_driver_ids)]
+            
+            num_wait_request = len(request_array_temp)
+            num_idle_driver = len(driver_loc_array_temp)
+
             # 4. rebuild a new order driver stack by stacking the remaining orders and drivers
             request_array = np.repeat(request_array_temp.values, num_idle_driver,
                                       axis=0)  # 复制(input_array,repeat_num,axis)
@@ -741,6 +745,11 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
 
             request_indexs_new = []
             driver_indexs_new = []
+
+            # append premium requests and drivers to request_array_temp
+            request_array_temp = pd.concat([request_array_temp, premium_request_array_temp], ignore_index=True)
+            driver_loc_array_temp = pd.concat([driver_loc_array_temp, premium_driver_loc_array_temp], ignore_index=True)
+
 
             for index in request_indexs:
                 request_indexs_new.append(

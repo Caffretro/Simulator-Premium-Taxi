@@ -101,7 +101,7 @@ class Simulator:
         self.driver_info = pattern.driver_info
         # Premium: select  ||'premium_driver_num'||  of the drivers to be premium drivers
         self.driver_info['premium'] = False
-        self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num']).index, 'premium'] = True
+        self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
 
 
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
@@ -310,8 +310,9 @@ class Simulator:
                                                         matched_itinerary_df['pickup_time'].values
 
             # passengers may cancel, drivers may also cancel. we only record uncancelled matches
-            con_passenger_remain = con_passenge_keep_wait
-            con_remain = con_driver_remain & con_passenger_remain
+            con_remain = con_driver_remain & con_passenge_keep_wait
+
+            # Cor_driver is driver id list, con_remain is True/False list for selecting which drivers to keep
             # order after cancelled, filter out matched requests
             update_wait_requests = df_matched[~con_remain]
 
@@ -320,7 +321,8 @@ class Simulator:
             self.driver_table.loc[cor_driver[~con_remain], ['status', 'remaining_time', 'total_idle_time']] = 0
             # print("driver")
             # print(self.driver_table.loc[cor_driver[con_remain]])
-            # order not cancelled
+
+            # new_matched_requests: matched orders that will remain matched
             new_matched_requests = df_matched[con_remain]
             new_matched_requests['t_matched'] = self.time
             new_matched_requests['pickup_distance'] = matched_itinerary_df[con_remain]['pickup_distance'].values
@@ -360,16 +362,30 @@ class Simulator:
             self.driver_table.loc[cor_driver[con_remain], 'time_to_last_cruising'] = 0
             self.driver_table.loc[cor_driver[con_remain], 'current_road_node_index'] = 0
             try:
-                self.driver_table.loc[cor_driver[con_remain], 'itinerary_node_list'] = \
-                (matched_itinerary_df[con_remain]['itinerary_node_list'] + new_matched_requests['itinerary_node_list']).values
+                # self.driver_table.loc[cor_driver[con_remain], 'itinerary_node_list'] = \
+                # (matched_itinerary_df[con_remain]['itinerary_node_list'] + new_matched_requests['itinerary_node_list']).values
+                combined_itinerary_node_list = pd.concat([matched_itinerary_df[con_remain]['itinerary_node_list'].reset_index(drop=True), 
+                                          new_matched_requests['itinerary_node_list'].reset_index(drop=True)], axis=1).sum(axis=1)
+                self.driver_table.loc[cor_driver[con_remain], 'itinerary_node_list'] = combined_itinerary_node_list.values
             except:
-                print(self.driver_table.loc[cor_driver[con_remain], 'itinerary_node_list'])
-                print(matched_itinerary_df[con_remain]['itinerary_node_list'])
-                print(new_matched_requests['itinerary_node_list'])
-            self.driver_table.loc[cor_driver[con_remain], 'itinerary_segment_dis_list'] = \
-                (matched_itinerary_df[con_remain]['itinerary_segment_dis_list'] + new_matched_requests['itinerary_segment_dis_list']).values
-            self.driver_table.loc[cor_driver[con_remain], 'remaining_time_for_current_node'] = \
-                matched_itinerary_df[con_remain]['itinerary_segment_dis_list'].map(lambda x: x[0]).values / self.vehicle_speed * 3600
+                print("exception!")
+                with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+                    print(self.driver_table.loc[cor_driver[con_remain], 'itinerary_node_list'])
+                    print(matched_itinerary_df['itinerary_node_list'])
+                    print(matched_itinerary_df[con_remain]['itinerary_node_list'])
+                    print(new_matched_requests['itinerary_node_list'])
+                    print((matched_itinerary_df[con_remain]['itinerary_node_list'] + new_matched_requests['itinerary_node_list']).values)
+
+            # self.driver_table.loc[cor_driver[con_remain], 'itinerary_segment_dis_list'] = \
+            #     (matched_itinerary_df[con_remain]['itinerary_segment_dis_list'] + new_matched_requests['itinerary_segment_dis_list']).values
+            combined_itinerary_segment_dis_list = pd.concat([matched_itinerary_df[con_remain]['itinerary_segment_dis_list'].reset_index(drop=True), 
+                                                 new_matched_requests['itinerary_segment_dis_list'].reset_index(drop=True)], axis=1).sum(axis=1)
+            self.driver_table.loc[cor_driver[con_remain], 'itinerary_segment_dis_list'] = combined_itinerary_segment_dis_list.values
+
+            # self.driver_table.loc[cor_driver[con_remain], 'remaining_time_for_current_node'] = \
+            #     matched_itinerary_df[con_remain]['itinerary_segment_dis_list'].map(lambda x: x[0]).values / self.vehicle_speed * 3600
+            remaining_time_for_current_node = combined_itinerary_segment_dis_list.map(lambda x: x[0]).values / self.vehicle_speed * 3600
+            self.driver_table.loc[cor_driver[con_remain], 'remaining_time_for_current_node'] = remaining_time_for_current_node
 
             if self.rl_mode == 'matching':
                 #  rl for matching

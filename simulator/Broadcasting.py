@@ -18,6 +18,7 @@ def driver_decision(distance, reward, lr_model):
     """
     r_dis, c_dis = distance.shape
     temp_ = np.dstack((distance, reward)).reshape(-1, 2)
+    # print(temp_)
     temp_ = driver_behaviour_scalar.transform(temp_)
     result = lr_model.predict_proba(temp_).reshape(r_dis, c_dis, 2)
     result = np.delete(result, 0, axis=2)
@@ -40,6 +41,11 @@ def dispatch_broadcasting(order_driver_info, dis_array,broadcasting_scale=1):
     :param broadcasting_scale: the radius of order broadcasting
     :return: matched driver order pair
     """
+
+    # there might be no orders to match for a function call, so check validity first
+    if len(order_driver_info) == 0:
+        return []
+
     columns_name = ['origin_lng', 'origin_lat', 'order_id', 'reward_units', 'origin_grid_id', 'driver_id',
                     'pick_up_distance']
 
