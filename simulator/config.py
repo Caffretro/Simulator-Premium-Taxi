@@ -40,7 +40,7 @@ env_params = {
 'price_increasing_percentage': 0.2,
 # 'premium_taxi_mode': True,
 'premium_taxi_increasing_coefficient': 1.2, # assume premium taxi is 20% more expensive than normal taxi
-'accept_premium_ratio': 0.2, # assume 20% of the drivers are premium taxi
+'accept_premium_ratio': 0.6847, # assume 20% of the drivers are premium taxi
 'premium_driver_num': 30,
 'north_lat': 22.55,
 'south_lat': 22.13,
