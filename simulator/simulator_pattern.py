@@ -68,12 +68,14 @@ class SimulatorPattern(object):
             # self.driver_info = self.driver_info.sample(n=env_params['driver_num'],replace=False)
             all_drivers = pd.unique(self.driver_info['driver_id'])
             random.seed(42)
-            driver_sample_size = self.sample_driver_size # 9402 for full data
+            driver_sample_size = self.sample_driver_size + 30 # 9402 for full data
             drivers_to_keep = random.sample(list(all_drivers), driver_sample_size)
             print("keeping", len(drivers_to_keep), "unique driver_id")
+            normal_drivers = drivers_to_keep[:driver_sample_size]
+            premium_drivers = drivers_to_keep[driver_sample_size:]
 
             # since this is baseline model, no need to check test or train
-            self.driver_info = self.driver_info[self.driver_info['driver_id'].isin(drivers_to_keep)]
-            
+            self.driver_info = self.driver_info[self.driver_info['driver_id'].isin(normal_drivers)]
+            self.driver_info_premium = self.driver_info[self.driver_info['driver_id'].isin(premium_drivers)]
             # self.driver_info = self.driver_info.sample(n=env_params['driver_num'])
             # print(self.driver_info)

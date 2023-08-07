@@ -95,14 +95,17 @@ class Simulator:
                                'matched_order_id', 'total_idle_time', 'time_to_last_cruising', 'current_road_node_index',
                                'remaining_time_for_current_node', 'itinerary_node_list', 'itinerary_segment_dis_list']
         self.driver_table = None
+        self.driver_table_premium = None
         self.driver_sample_ratio = kwargs['driver_sample_ratio']
 
         # order and driver databases
         self.driver_info = pattern.driver_info
+        self.driver_info_premium = pattern.driver_info_premium
         # Premium: select  ||'premium_driver_num'||  of the drivers to be premium drivers
         self.driver_info['premium'] = False
-        self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
-
+        self.driver_info_premium['premium'] = True
+        # self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
+        self.driver_info = pd.concat([self.driver_info, self.driver_info_premium], ignore_index=True)
 
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
         self.request_all = pattern.request_all
@@ -110,6 +113,7 @@ class Simulator:
         self.request_database = None
         # TJ
         self.total_reward = 0
+        self.total_reward_premium = 0
         # TJ
         if self.rl_mode == 'reposition':
             self.reposition_method = kwargs['reposition_method']  # rl for repositioning
@@ -201,8 +205,11 @@ class Simulator:
         self.matched_requests = pd.DataFrame(columns=self.request_columns)
         # TJ
         self.total_reward = 0
+        self.total_reward_premium = 0
         self.cumulative_on_trip_driver_num = 0
+        self.cumulative_on_trip_premium_driver_num = 0
         self.occupancy_rate = 0
+        self.occupancy_rate_premium = 0
         self.total_service_time = 0
         self.occupancy_rate_no_pickup = 0
         self.total_online_time = self.driver_table.shape[0] * (self.t_end - self.t_initial)
@@ -1192,13 +1199,12 @@ class Simulator:
         driver_table = deepcopy(self.driver_table)
         time1 = time.time()
         # print("order duplicated flag:",wait_requests.order_id.duplicated().sum())
-        # TODO: switch the dispatch method to broadcasting, check if this code works
         # matched_pair_actual_indexes, matched_itinerary = order_dispatch(wait_requests, driver_table,
         #                                                                 self.maximal_pickup_distance,
         #                                                               self.dispatch_method,self.method)
         
         '''
-            TODO: figure out if we can use the broadcasting method to match premium taxis first,
+            figure out if we can use the broadcasting method to match premium taxis first,
             then combine results with the normal taxis
             don't forget pricing
         '''
@@ -1223,7 +1229,12 @@ class Simulator:
         self.cumulative_on_trip_driver_num += self.driver_table[self.driver_table['status'] == 2].shape[0]
         self.occupancy_rate = self.cumulative_on_trip_driver_num / (
                     (1 + self.current_step) * self.driver_table.shape[0])
-        
+        self.cumulative_on_trip_premium_driver_num += \
+            self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
+        self.cumulative_on_trip_premium_driver_num += \
+            self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == True)].shape[0]
+        self.occupancy_rate_premium = self.cumulative_on_trip_driver_num / (
+                    (1 + self.current_step) * self.driver_table[self.driver_table['premium'] == True].shape[0])
         # calculate occupancy rate per hour
         self.per_hour_on_trip_driver_num[self.hour] += self.driver_table[self.driver_table['status'] == 1].shape[0]
         self.per_hour_on_trip_driver_num[self.hour] += self.driver_table[self.driver_table['status'] == 2].shape[0]
@@ -1244,10 +1255,12 @@ class Simulator:
         
         # TJ
         if len(df_new_matched_requests) != 0:
+            print(df_new_matched_requests)
             # premium: already updated reward based on premium_order is True or False
+            # TODO: calculate premium order total reward
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
-        else:
-            self.total_reward += 0
+            self.total_reward_premium += np.sum(df_new_matched_requests[df_new_matched_requests['premium_order'] == True]['designed_reward'].values)
+
         # TJ
         if self.end_of_episode == 0:
             # here we concatenate the new matched requests with the old ones, and update the global matched requests
@@ -1309,8 +1322,6 @@ class Simulator:
         # TJ
         if len(df_new_matched_requests) != 0:
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
-        else:
-            self.total_reward += 0
         # TJ
         # Step 3: generate new orders
         self.step_bootstrap_new_orders()

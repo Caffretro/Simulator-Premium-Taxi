@@ -74,6 +74,7 @@ if __name__ == "__main__":
                                             load_path + 'episode_4000\\sarsa_q_value_table_epoch_4000.pickle')
 
                                     total_reward = 0
+                                    total_reward_premium = 0
                                     total_request_num = 0
                                     long_request_num = 0
                                     medium_request_num = 0
@@ -83,6 +84,7 @@ if __name__ == "__main__":
                                     matched_medium_request_num = 0
                                     matched_short_request_num = 0
                                     occupancy_rate = 0
+                                    occupancy_rate_premium = 0
                                     occupancy_rate_per_hour = [0] * 24
                                     occupancy_rate_no_pickup = 0
                                     pickup_time = 0
@@ -109,8 +111,10 @@ if __name__ == "__main__":
                                         end_time = time.time()
 
                                         total_reward += simulator.total_reward
+                                        total_reward_premium += simulator.total_reward_premium
                                         total_request_num += simulator.total_request_num
                                         occupancy_rate += simulator.occupancy_rate
+                                        occupancy_rate_premium += simulator.occupancy_rate_premium
                                         occupancy_rate_per_hour = simulator.per_hour_occupancy_rate[:]
                                         matched_request_num += simulator.matched_requests_num
                                         long_request_num += simulator.long_requests_num
@@ -130,6 +134,7 @@ if __name__ == "__main__":
                                     ay.append(total_reward)
                                     print("start_time and end_time:", start_time, end_time)
                                     print("total reward",total_reward)
+                                    print("total premium reward",total_reward_premium)
                                     total_request_num = total_request_num / len(TEST_DATE_LIST)
                                     occupancy_rate = occupancy_rate / len(TEST_DATE_LIST)
                                     matched_request_num = matched_request_num / len(TEST_DATE_LIST)
@@ -146,6 +151,7 @@ if __name__ == "__main__":
                                     print("wait",waiting_time)
                                     print("matching ratio",matched_request_num/total_request_num)
                                     print("ocu",occupancy_rate)
+                                    print("ocu for premium taxi", occupancy_rate_premium)
                                     print("ocu per hour",occupancy_rate_per_hour) # check ocu per hour
                                     print("time used", end_time - start_time)
                                     record_array = np.array(
