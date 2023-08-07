@@ -99,14 +99,13 @@ class Simulator:
         self.driver_sample_ratio = kwargs['driver_sample_ratio']
 
         # order and driver databases
-        self.driver_info = pattern.driver_info
+        self.driver_info = pattern.normal_driver_info
         self.driver_info_premium = pattern.driver_info_premium
         # Premium: select  ||'premium_driver_num'||  of the drivers to be premium drivers
         self.driver_info['premium'] = False
         self.driver_info_premium['premium'] = True
         # self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
         self.driver_info = pd.concat([self.driver_info, self.driver_info_premium], ignore_index=True)
-
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
         self.request_all = pattern.request_all
         self.request_databases = None
@@ -1255,7 +1254,6 @@ class Simulator:
         
         # TJ
         if len(df_new_matched_requests) != 0:
-            print(df_new_matched_requests)
             # premium: already updated reward based on premium_order is True or False
             # TODO: calculate premium order total reward
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
