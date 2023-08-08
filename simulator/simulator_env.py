@@ -206,8 +206,10 @@ class Simulator:
         self.total_reward = 0
         self.total_reward_premium = 0
         self.cumulative_on_trip_driver_num = 0
+        self.cumulative_on_trip_normal_driver_num = 0
         self.cumulative_on_trip_premium_driver_num = 0
         self.occupancy_rate = 0
+        self.occupancy_rate_normal = 0
         self.occupancy_rate_premium = 0
         self.total_service_time = 0
         self.occupancy_rate_no_pickup = 0
@@ -238,6 +240,10 @@ class Simulator:
         # Junheng Wang
         self.per_hour_on_trip_driver_num = [0] * 24
         self.per_hour_occupancy_rate = [0] * 24
+        self.per_hour_on_trip_normal_driver_num = [0] * 24
+        self.per_hour_occupancy_rate_normal = [0] * 24
+        self.per_hour_on_trip_premium_driver_num = [0] * 24
+        self.per_hour_occupancy_rate_premium = [0] * 24
         self.hour = 0
         self.current_step_in_hour = 0
 
@@ -642,8 +648,11 @@ class Simulator:
                 #reward_list *= (1 + env_params['price_increasing_percentage'])
                 wait_info['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
                 # Premium: set portion of orders to accept premium taxis
-                wait_info['accept_premium'] = np.random.choice(\
-                            [True, False], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
+                if env_params['premium_taxi_mode'] == True:
+                    wait_info['accept_premium'] = np.random.choice(\
+                                [True, False], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
+                else:
+                    wait_info['accept_premium'] = False
                 # transfer_flag_array = np.zeros(len(self.request_database))
                 if self.rl_mode == 'matching':
                     #  rl for matching
@@ -720,8 +729,9 @@ class Simulator:
                 # added maximum_price back   
                 # wait_info['maximum_price_passenger_can_tolerate'] += skewed_normal_distribution(price_increase_params[0],price_increase_params[1],price_increase_params[2],price_increase_params[3],price_increase_params[4],len(wait_info))
                 # Premium: this step will exclude some requests for next round, but we need to figure out a way to design premium-acceptor's price
+                # records regular price here. premium price will be updated in update_info_after_matching_multi_process function
                 wait_info['calculated_hk_price'] = wait_info['trip_distance'].apply(calculate_hk_price)
-                # Premium: also keep all premium orderssimple way is to use a OR operation
+                # Premium: also keep all premium orders. simple way is to use a OR operation
                 wait_info = wait_info[(wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']) | (wait_info['accept_premium'] == True)]
                 self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
             
@@ -1144,44 +1154,57 @@ class Simulator:
             self.end_of_episode = 1
         # rl for matching
         return
+    
+    def occupancy_statistics(self):
+        """
+        This function used to update all-day and per-hour occupancy rates
+        :return:
+        """
+        # all-day statistics
 
-    # def step(self):
-    #     """
-    #     This function used to run the simulator step by step
-    #     :return:
-    #     """
-    #     self.new_tracks = {}
+        # all driver occupancy rate
+        self.cumulative_on_trip_driver_num += self.driver_table[self.driver_table['status'] == 1].shape[0]
+        self.cumulative_on_trip_driver_num += self.driver_table[self.driver_table['status'] == 2].shape[0]
+        self.occupancy_rate = self.cumulative_on_trip_driver_num / (
+                    (1 + self.current_step) * self.driver_table.shape[0])
+        if env_params['premium_taxi_mode'] == True:
+            # premium driver occupancy rate
+            self.cumulative_on_trip_premium_driver_num += \
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
+            self.cumulative_on_trip_premium_driver_num += \
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == True)].shape[0]
+            self.occupancy_rate_premium = self.cumulative_on_trip_premium_driver_num / (
+                        (1 + self.current_step) * self.driver_table[self.driver_table['premium'] == True].shape[0])
+            # normal driver occupancy rate
+            self.cumulative_on_trip_normal_driver_num += \
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == False)].shape[0]
+            self.cumulative_on_trip_normal_driver_num += \
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == False)].shape[0]
+            self.occupancy_rate_normal = self.cumulative_on_trip_normal_driver_num / (
+                        (1 + self.current_step) * self.driver_table[self.driver_table['premium'] == False].shape[0])
+            
+        # per-hour statistics
 
-    #     # Step 1: order dispatching
-    #     wait_requests = deepcopy(self.wait_requests)
-    #     driver_table = deepcopy(self.driver_table)
-    #     matched_pair_actual_indexes, matched_itinerary = order_dispatch(wait_requests, driver_table, self.maximal_pickup_distance, self.dispatch_method,self.method)
-    #     # Step 2: driver/passenger reaction after dispatching
-    #     df_new_matched_requests, df_update_wait_requests = self.update_info_after_matching_multi_process(matched_pair_actual_indexes, matched_itinerary)
-    #     self.matched_requests = pd.concat([self.matched_requests, df_new_matched_requests], axis=0)
-    #     self.matched_requests = self.matched_requests.reset_index(drop=True)
-    #     self.wait_requests = df_update_wait_requests.reset_index(drop=True)
-
-    #     # Step 3: bootstrap new orders
-    #     self.order_generation()
-
-    #     # Step 4: both-rg-cruising and/or repositioning decision
-    #     self.cruise_and_reposition()
-
-    #     # Step 4.1: track recording
-    #     if self.track_recording_flag:
-    #         self.real_time_track_recording()
-
-    #     # Step 5: update next state for drivers
-    #     self.update_state()
-
-    #     # Step 6： online/offline update()
-    #     self.driver_online_offline_update()
-
-    #     # Step 7: update time
-    #     self.update_time()
-
-    #     return self.new_tracks
+        # calculate occupancy rate per hour
+        self.per_hour_on_trip_driver_num[self.hour] += self.driver_table[self.driver_table['status'] == 1].shape[0]
+        self.per_hour_on_trip_driver_num[self.hour] += self.driver_table[self.driver_table['status'] == 2].shape[0]
+        self.per_hour_occupancy_rate[self.hour] = self.per_hour_on_trip_driver_num[self.hour] / (
+                    (1 + self.current_step_in_hour) * self.driver_table.shape[0])
+        if env_params['premium_taxi_mode'] == True:
+            # calculate premium occupancy rate per hour
+            self.per_hour_on_trip_premium_driver_num[self.hour] += \
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
+            self.per_hour_on_trip_premium_driver_num[self.hour] += \
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == True)].shape[0]
+            self.per_hour_occupancy_rate_premium[self.hour] = self.per_hour_on_trip_premium_driver_num[self.hour] / (
+                        (1 + self.current_step_in_hour) * self.driver_table[self.driver_table['premium'] == True].shape[0])
+            # calculate normal driver occupancy rate per hour
+            self.per_hour_on_trip_normal_driver_num[self.hour] += \
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == False)].shape[0]
+            self.per_hour_on_trip_normal_driver_num[self.hour] += \
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == False)].shape[0]
+            self.per_hour_occupancy_rate_normal[self.hour] = self.per_hour_on_trip_normal_driver_num[self.hour] / (
+                        (1 + self.current_step_in_hour) * self.driver_table[self.driver_table['premium'] == False].shape[0])
 
     def step(self, score_agent={}, epsilon=0): # rl for matching
         """
@@ -1222,23 +1245,11 @@ class Simulator:
         # self.matched_requests_num += len(matched_pair_actual_indexes)
         time2 = time.time()
         self.time_step1 += (time2 - time1)
-       
+
+        # occupancy rate statistics
+        self.occupancy_statistics()
+
         # Step 2: driver/passenger reaction after dispatching
-        self.cumulative_on_trip_driver_num += self.driver_table[self.driver_table['status'] == 1].shape[0]
-        self.cumulative_on_trip_driver_num += self.driver_table[self.driver_table['status'] == 2].shape[0]
-        self.occupancy_rate = self.cumulative_on_trip_driver_num / (
-                    (1 + self.current_step) * self.driver_table.shape[0])
-        self.cumulative_on_trip_premium_driver_num += \
-            self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
-        self.cumulative_on_trip_premium_driver_num += \
-            self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == True)].shape[0]
-        self.occupancy_rate_premium = self.cumulative_on_trip_driver_num / (
-                    (1 + self.current_step) * self.driver_table[self.driver_table['premium'] == True].shape[0])
-        # calculate occupancy rate per hour
-        self.per_hour_on_trip_driver_num[self.hour] += self.driver_table[self.driver_table['status'] == 1].shape[0]
-        self.per_hour_on_trip_driver_num[self.hour] += self.driver_table[self.driver_table['status'] == 2].shape[0]
-        self.per_hour_occupancy_rate[self.hour] = self.per_hour_on_trip_driver_num[self.hour] / (
-                    (1 + self.current_step_in_hour) * self.driver_table.shape[0])
         
         # premium: use df_new_matched_requests['premium_order'] to check a ready-to-bootstrap order is premium or not
         df_new_matched_requests, df_update_wait_requests = self.update_info_after_matching_multi_process(
@@ -1257,7 +1268,8 @@ class Simulator:
             # premium: already updated reward based on premium_order is True or False
             # TODO: calculate premium order total reward
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
-            self.total_reward_premium += np.sum(df_new_matched_requests[df_new_matched_requests['premium_order'] == True]['designed_reward'].values)
+            if env_params['premium_taxi_mode'] == True:
+                self.total_reward_premium += np.sum(df_new_matched_requests[df_new_matched_requests['premium_order'] == True]['designed_reward'].values)
 
         # TJ
         if self.end_of_episode == 0:
