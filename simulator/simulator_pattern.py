@@ -69,7 +69,7 @@ class SimulatorPattern(object):
             all_drivers = pd.unique(self.driver_info['driver_id'])
             random.seed(42)
             if env_params['premium_taxi_mode'] == True:
-                driver_sample_size_all = self.sample_driver_size + 30 # 9402 for full data
+                driver_sample_size_all = self.sample_driver_size + env_params['premium_driver_num'] # 9402 for full data
                 drivers_to_keep = random.sample(list(all_drivers), driver_sample_size_all)
                 print(f"keeping {driver_sample_size_all }unique driver_id, {self.sample_driver_size} are normal drivers")
                 normal_drivers = drivers_to_keep[:self.sample_driver_size]

@@ -108,6 +108,7 @@ class Simulator:
             self.driver_info_premium['premium'] = True
             # self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
             self.driver_info = pd.concat([self.driver_info, self.driver_info_premium], ignore_index=True)
+            # print(self.driver_info['premium'].value_counts())
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
         self.request_all = pattern.request_all
         self.request_databases = None
@@ -115,6 +116,8 @@ class Simulator:
         # TJ
         self.total_reward = 0
         self.total_reward_premium = 0
+        self.matched_regular_order_count = 0
+        self.matched_premium_order_count = 0
         # TJ
         if self.rl_mode == 'reposition':
             self.reposition_method = kwargs['reposition_method']  # rl for repositioning
@@ -348,7 +351,7 @@ class Simulator:
             new_matched_requests['premium_order'] = matched_pair_index_df[con_remain]['premium_order'].values
             # Premium: update premium orders' designed_reward
             new_matched_requests.loc[new_matched_requests['premium_order'] == True, 'designed_reward'] = \
-                new_matched_requests[new_matched_requests['premium_order'] == True]['designed_reward'].apply(calculate_hk_price_premium)
+                new_matched_requests[new_matched_requests['premium_order'] == True]['designed_reward'].apply(transform_regular_price_to_premium_price)
             self.total_service_time += np.sum(new_matched_requests['trip_time'].values)
             extra_time = new_matched_requests['t_end'].values - self.t_end
             extra_time[extra_time < 0] = 0
@@ -653,6 +656,7 @@ class Simulator:
                 if env_params['premium_taxi_mode'] == True:
                     wait_info['accept_premium'] = np.random.choice(\
                                 [True, False], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
+                    # print(wait_info['accept_premium'].value_counts())
                 else:
                     wait_info['accept_premium'] = False
                 # transfer_flag_array = np.zeros(len(self.request_database))
@@ -1271,7 +1275,11 @@ class Simulator:
             # TODO: calculate premium order total reward
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
             if env_params['premium_taxi_mode'] == True:
+                self.matched_regular_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == False])
+                self.matched_premium_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == True])
                 self.total_reward_premium += np.sum(df_new_matched_requests[df_new_matched_requests['premium_order'] == True]['designed_reward'].values)
+            else:
+                self.matched_regular_order_count += len(df_new_matched_requests)
 
         # TJ
         if self.end_of_episode == 0:

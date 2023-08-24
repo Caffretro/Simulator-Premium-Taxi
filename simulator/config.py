@@ -40,8 +40,8 @@ env_params = {
 'price_increasing_percentage': 0.2,
 'premium_taxi_mode': False,
 'premium_taxi_increasing_coefficient': 1.2, # assume premium taxi is 20% more expensive than normal taxi
-'accept_premium_ratio': 0.6847, # assume 20% of the drivers are premium taxi
-'premium_driver_num': 30,
+'accept_premium_ratio': 0.6847, # 68.4% passengers are willing to take premium taxi
+'premium_driver_num': 50,
 'north_lat': 22.55,
 'south_lat': 22.13,
 'east_lng': 114.42,
@@ -70,6 +70,8 @@ price_params_dict = {'short': [0.8393972974276114, 24.794554808478033, 6.8157389
                     'short_medium': [-7.201468821915991, 64.4190455714694, 21.876342234268932],
                     'medium_long': [224.0591773703033, 102.0691349634478, 58.902692735890035],
                     'long': [-0.07803413752462217, 266.0959888157933, 53.462130123196246]}
+
+premium_price_accept_param = {'10': 0.46, '20': 0.36, '30': 0.16, '40': 0.02}
 
 # price_increase_params_dict = {'morning': [0.001,1.181,3.583,4.787,0.001],
 #                     'evening': [0,1.21,2.914,5.023,0.013],

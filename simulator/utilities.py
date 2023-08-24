@@ -636,6 +636,9 @@ def calculate_hk_price_premium(dis):
         return (27 + 1.9 * (int((dis - 2.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
     else:
         return (93.5 + 1.3 * (int((dis - 7.0) * 1000) // 200)) * env_params["premium_taxi_increasing_coefficient"]
+    
+def transform_regular_price_to_premium_price(price):
+    return price * env_params["premium_taxi_increasing_coefficient"]
 
 def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',
                    cur_time=0):
@@ -682,6 +685,8 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
                 premium_driver_loc_array_temp = idle_driver_table.loc[idle_driver_table['premium'] == True, ['lng', 'lat', 'driver_id']]
                 num_premium_wait_request = len(premium_request_array_temp)
                 num_premium_idle_driver = len(premium_driver_loc_array_temp)
+                # print(f"waiting premium orders: {num_premium_wait_request}")
+                # print(f"avaliable premium drivers: {num_premium_idle_driver}")
                 premium_request_array = np.repeat(premium_request_array_temp.values, num_premium_idle_driver, axis=0)
                 premium_driver_loc_array = np.tile(premium_driver_loc_array_temp.values, (num_premium_wait_request, 1))
 
@@ -721,6 +726,8 @@ def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_dist
             
             num_wait_request = len(request_array_temp)
             num_idle_driver = len(driver_loc_array_temp)
+            # print(f"waiting left orders: {num_wait_request}")
+            # print(f"avaliable regular drivers: {num_idle_driver}")
 
             # 4. rebuild a new order driver stack by stacking the remaining orders and drivers
             request_array = np.repeat(request_array_temp.values, num_idle_driver,

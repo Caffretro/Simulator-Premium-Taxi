@@ -142,6 +142,7 @@ if __name__ == "__main__":
                                     print("total reward",total_reward)
                                     print("total premium reward",total_reward_premium)
                                     print("total normal driver reward", total_reward - total_reward_premium)
+                                    print(f"total matched premium orders: {simulator.matched_premium_order_count}, regular orders: {simulator.matched_regular_order_count}")
                                     total_request_num = total_request_num / len(TEST_DATE_LIST)
                                     occupancy_rate = occupancy_rate / len(TEST_DATE_LIST)
                                     matched_request_num = matched_request_num / len(TEST_DATE_LIST)
@@ -156,7 +157,7 @@ if __name__ == "__main__":
                                     waiting_time = waiting_time / len(TEST_DATE_LIST)
                                     print("pick",pickup_time)
                                     print("wait",waiting_time)
-                                    print("matching ratio",matched_request_num/total_request_num)
+                                    print("matching ratio",matched_request_num/60000) # FIXME: for now let's just use 60000
                                     print("ocu",occupancy_rate)
                                     print("ocu for normal taxi", occupancy_rate_normal)
                                     print("ocu for premium taxi", occupancy_rate_premium)
