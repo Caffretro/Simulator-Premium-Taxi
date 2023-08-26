@@ -742,13 +742,13 @@ class Simulator:
                 # Premium: this step will exclude some requests for next round, but we need to figure out a way to design premium-acceptor's price
                 # records regular price here. premium price will be updated in update_info_after_matching_multi_process function
                 wait_info['calculated_hk_price'] = wait_info['trip_distance'].apply(calculate_hk_price)
-                wait_info['calculated_hk_premium_price'] = wait_info.apply(transform_regular_price_to_premium_price)
+                wait_info['calculated_hk_premium_price'] = wait_info['calculated_hk_price'].apply(transform_regular_price_to_premium_price)
                 # Premium: we want to preserve orders based on the following rule:
                 # 1. if the passenger can only accept regular taxi, keep the orders if the price is lower than the maximum price he can tolerate
                 # 2. if the passenger can accept premium taxi, only keep the orders that satisfy both the tolerance criteria for regular and premium taxi
                 # wait_info = wait_info[(wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']) &
                 #                        (wait_info['accept_premium'] == True)]
-                wait_info = wait_info[wait_info.apply(filter_order_tolerance)]
+                wait_info = wait_info[wait_info.apply(filter_order_tolerance, axis=1)]
                 self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
             
                 
