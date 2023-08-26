@@ -620,7 +620,6 @@ def skewed_normal_distribution(u,thegma,k,omega,a,input_size):
 def skewed_normal_distribution_3_param(a, loc, scale, size):
     return skewnorm.rvs(a, loc, scale, size)
 
-
 def calculate_hk_price(dis):
     if dis <= 2.0:
         return 27
@@ -639,6 +638,15 @@ def calculate_hk_price_premium(dis):
     
 def transform_regular_price_to_premium_price(price):
     return price * env_params["premium_taxi_increasing_coefficient"]
+
+def filter_order_tolerance(passenger):
+    if not passenger['accept_premium']:
+        return passenger['calculated_hk_price'] <= passenger['maximum_price_passenger_can_tolerate']
+    else:
+        return (
+            passenger['calculated_hk_price'] <= passenger['maximum_price_passenger_can_tolerate']
+            and passenger['calculated_hk_premium_price'] <= passenger['maximum_premium_price_passenger_can_tolerate']
+        )
 
 def order_dispatch_broadcasting(wait_requests, driver_table, maximal_pickup_distance=950, dispatch_method='LD',
                    cur_time=0):
