@@ -39,7 +39,7 @@ env_params = {
 'road_information_mode':'load',
 'price_increasing_percentage': 0.2,
 'premium_taxi_mode': True,
-'premium_taxi_increasing_coefficient': 1.2, # assume premium taxi is 20% more expensive than normal taxi
+'premium_taxi_increasing_coefficient': 1.1, # assume premium taxi is 20% more expensive than normal taxi at first
 'accept_premium_ratio': 0.6847, # 68.4% passengers are willing to take premium taxi
 'premium_driver_num': 30,
 'north_lat': 22.55,

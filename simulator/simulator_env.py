@@ -745,13 +745,16 @@ class Simulator:
                 wait_info['calculated_hk_premium_price'] = wait_info['calculated_hk_price'].apply(transform_regular_price_to_premium_price)
                 # Premium: we want to preserve orders based on the following rule:
                 # 1. if the passenger can only accept regular taxi, keep the orders if the price is lower than the maximum price he can tolerate
-                # 2. if the passenger can accept premium taxi, only keep the orders that satisfy both the tolerance criteria for regular and premium taxi
-                # wait_info = wait_info[(wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']) &
-                #                        (wait_info['accept_premium'] == True)]
+                # 2. if the passenger can accept premium taxi, since we want to explore price increase level, there might be some experiment settings that
+                    # a lot of premium-acceptable users cannot accept premium taxi prices. In that case, we can transform them to only accept regular taxi
+                    # To do that, first compare prices to premium taxi. if they can can tolerate increased premium price,
+                wait_info.loc[wait_info['accept_premium'] & ~wait_info.apply(flip_accept_premium_state, axis=1), 'accept_premium'] = False
+
+                # 3. for passengers who accept premium taxi, only keep the orders that satisfy both the tolerance criteria for regular and premium taxi
+                    # wait_info = wait_info[(wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']) &
+                    #                        (wait_info['accept_premium'] == True)]. Since they will go two rounds of matching (premium and regular)
                 wait_info = wait_info[wait_info.apply(filter_order_tolerance, axis=1)]
                 self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
-            
-                
 
                 # statistics
                 self.total_request_num += wait_info.shape[0]
@@ -861,12 +864,36 @@ class Simulator:
         :return: None
         """
 
-        # Used to only track drivers that are not working, but we want all drivers
-        con_real_time = (self.driver_table['status'] == 0) | (self.driver_table['status'] == 3) | \
-                        (self.driver_table['status'] == 4)
-        # real_time_driver_table = self.driver_table.loc[con_real_time, ['driver_id', 'lng', 'lat', 'status']]
-        real_time_driver_table = self.driver_table[['driver_id', 'lng', 'lat', 'status']]
+        # # Used to only track drivers that are not working, but we want all drivers
+        # # con_real_time = (self.driver_table['status'] == 0) | (self.driver_table['status'] == 3) | \
+        # #                 (self.driver_table['status'] == 4)
+        # # real_time_driver_table = self.driver_table.loc[con_real_time, ['driver_id', 'lng', 'lat', 'status']]
 
+        # real_time_driver_table = self.driver_table[['driver_id', 'lng', 'lat', 'status']]
+
+        # real_time_driver_table['time'] = self.time
+        # lat_array = real_time_driver_table['lat'].values.tolist()
+        # lng_array = real_time_driver_table['lng'].values.tolist()
+        # node_list = []
+        # grid_list = []
+        # for i in range(len(lng_array)):
+        #     id = node_coord_to_id[(lng_array[i], lat_array[i])]
+        #     node_list.append(id)
+        #     grid_list.append(result[result['node_id'] == id ]['grid_id'].tolist()[0])
+        # real_time_driver_table['node_id'] = node_list
+        # real_time_driver_table['grid_id'] = grid_list
+        # real_time_driver_table = real_time_driver_table[['driver_id','lat','lng','node_id','grid_id','status','time']]
+        # real_time_tracks = real_time_driver_table.set_index('driver_id').T.to_dict('list')
+        # self.new_tracks = {**self.new_tracks, **real_time_tracks}
+        # if (int(self.time) % 3600 == 0 and int(self.time) != 0) or int(self.time) == 86395:
+        #     self.new_tracks_file_count += 1
+        #     print(f"Writing hour {self.new_tracks_file_count} tracks to directory...")
+        #     with open(f'./output_full/tracks/tracks_hour_{self.new_tracks_file_count}_sampled.pickle', 'wb') as file:
+        #         pickle.dump(self.new_tracks, file)
+        #     self.new_tracks = {}
+
+        # since we do not care about driver id, and we only want status composition and total driver count, use the code below
+        real_time_driver_table = self.driver_table[['driver_id', 'lng', 'lat', 'status']]
         real_time_driver_table['time'] = self.time
         lat_array = real_time_driver_table['lat'].values.tolist()
         lng_array = real_time_driver_table['lng'].values.tolist()
@@ -875,12 +902,22 @@ class Simulator:
         for i in range(len(lng_array)):
             id = node_coord_to_id[(lng_array[i], lat_array[i])]
             node_list.append(id)
-            grid_list.append(result[result['node_id'] == id ]['grid_id'].tolist()[0])
+            grid_list.append(result[result['node_id'] == id]['grid_id'].tolist()[0])
         real_time_driver_table['node_id'] = node_list
-        real_time_driver_table['grid_id'] = grid_list
-        real_time_driver_table = real_time_driver_table[['driver_id','lat','lng','node_id','grid_id','status','time']]
+        # real_time_driver_table['grid_id'] = grid_list
+        real_time_driver_table = real_time_driver_table[['driver_id', 'lat', 'lng', 'node_id', 'status']]
         real_time_tracks = real_time_driver_table.set_index('driver_id').T.to_dict('list')
-        self.new_tracks = {**self.new_tracks, **real_time_tracks}
+        
+        # Store the track data for each time step as a list of values in the self.new_tracks dictionary
+        self.new_tracks[self.time] = list(real_time_tracks.values())
+        
+        if (int(self.time) % 3600 == 0 and int(self.time) != 0) or int(self.time) == 86395:
+            self.new_tracks_file_count += 1
+            print(f"Writing hour {self.new_tracks_file_count} tracks to directory...")
+            with open(f'./output_full_makeup/tracks/tracks_hour_{self.new_tracks_file_count}.pickle', 'wb') as file:
+                pickle.dump(self.new_tracks, file)
+            self.new_tracks = {}
+
 
     # rl for repositioning
     def generate_repo_driver_state(self):
@@ -1227,7 +1264,6 @@ class Simulator:
         This function used to run the simulator step by step
         :return:
         """
-        self.new_tracks = {}
 
         self.dispatch_transitions_buffer = [np.array([]).reshape([0, 2]), np.array([]), np.array([]).reshape([0, 2]),
                                             np.array([]).astype(float)]  # rl for matching

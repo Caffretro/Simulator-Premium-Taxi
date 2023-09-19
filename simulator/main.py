@@ -139,9 +139,11 @@ if __name__ == "__main__":
                                     ax.append(epoch)
                                     ay.append(total_reward)
                                     print("start_time and end_time:", start_time, end_time)
-                                    print("total reward",total_reward)
-                                    print("total premium reward",total_reward_premium)
-                                    print("total normal driver reward", total_reward - total_reward_premium)
+                                    print("total revenue",total_reward*24)
+                                    print("total premium reward",total_reward_premium,
+                                          "premium monthly revenue", total_reward_premium * 15 / float(env_params['premium_driver_num']))
+                                    print("total normal driver reward", total_reward - total_reward_premium,
+                                          "regular monthly revenue", (total_reward - total_reward_premium) * 15 / single_driver_num)
                                     print(f"total matched premium orders: {simulator.matched_premium_order_count}, regular orders: {simulator.matched_regular_order_count}")
                                     total_request_num = total_request_num / len(TEST_DATE_LIST)
                                     occupancy_rate = occupancy_rate / len(TEST_DATE_LIST)
