@@ -37,6 +37,7 @@ class Simulator:
         # track recording
         self.track_recording_flag = kwargs['track_recording_flag']
         self.new_tracks = {}
+        self.record_flows = {}
         self.match_and_cancel_track = {}
         self.passenger_track = {}
 
@@ -909,14 +910,16 @@ class Simulator:
         real_time_tracks = real_time_driver_table.set_index('driver_id').T.to_dict('list')
         
         # Store the track data for each time step as a list of values in the self.new_tracks dictionary
-        self.new_tracks[self.time] = list(real_time_tracks.values())
+        # abandoned the new_tracks method and store something new
+        self.record_flows[self.time] = list(real_time_tracks.values())
         
         if (int(self.time) % 3600 == 0 and int(self.time) != 0) or int(self.time) == 86395:
-            self.new_tracks_file_count += 1
-            print(f"Writing hour {self.new_tracks_file_count} tracks to directory...")
-            with open(f'./output_full_makeup/tracks/tracks_hour_{self.new_tracks_file_count}.pickle', 'wb') as file:
-                pickle.dump(self.new_tracks, file)
-            self.new_tracks = {}
+            self.record_flows_file_count += 1
+            print(f"Writing hour {self.record_flows_file_count} tracks to directory...")
+            with open(f'./output_full_makeup/tracks/flows_hour_{self.record_flows_file_count}.pickle', 'wb') as file:
+                pickle.dump(self.record_flows, file)
+            self.record_flows = {}
+
 
 
     # rl for repositioning
@@ -1264,6 +1267,8 @@ class Simulator:
         This function used to run the simulator step by step
         :return:
         """
+
+        self.new_tracks = {}
 
         self.dispatch_transitions_buffer = [np.array([]).reshape([0, 2]), np.array([]), np.array([]).reshape([0, 2]),
                                             np.array([]).astype(float)]  # rl for matching
