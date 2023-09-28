@@ -101,10 +101,11 @@ class Simulator:
 
         # order and driver databases
         self.driver_info = pattern.normal_driver_info
+        # TODO: modify True/False to 0/1 to match passenger preference group type
         self.driver_info['premium'] = False
         
         # Premium: select  ||'premium_driver_num'||  of the drivers to be premium drivers
-        if env_params['premium_taxi_mode'] == True:
+        if env_params['multi_taxi_mode'] == True:
             self.driver_info_premium = pattern.driver_info_premium
             self.driver_info_premium['premium'] = True
             # self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
@@ -195,6 +196,11 @@ class Simulator:
 
         # Premium: Added column for recording whether the order is premium or not
         self.requests['accept_premium'] = False
+
+        # TODO: we need to modify the taxi mode preference here
+        # 0: only accept regular; 1: only accept premium; 2: accepts both types of services
+        # we want to align T/F (1/0) with premium driver flag
+        self.requests['vehicle_type_preference'] = 0 # TODO: this will be updated further
 
         trip_distance = self.requests['trip_distance'].values.tolist()
         
@@ -654,11 +660,16 @@ class Simulator:
                 #reward_list *= (1 + env_params['price_increasing_percentage'])
                 wait_info['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
                 # Premium: set portion of orders to accept premium taxis
-                if env_params['premium_taxi_mode'] == True:
+                if env_params['multi_taxi_mode'] == True:
+                    # FIXME: this will be initialized according to our survey.
+                    # 0 only take regular, 1 only take premium, 2 take both.
+                    # According to survey, 2.7% only regular, 4.0 only premium, assign value using distribution
+                    wait_info['vehicle_type_preference'] = 0
                     wait_info['accept_premium'] = np.random.choice(\
                                 [True, False], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
                     # print(wait_info['accept_premium'].value_counts())
                 else:
+                    wait_info['vehicle_type_preference'] = 2
                     wait_info['accept_premium'] = False
                 # transfer_flag_array = np.zeros(len(self.request_database))
                 if self.rl_mode == 'matching':
@@ -1223,7 +1234,7 @@ class Simulator:
         self.cumulative_on_trip_driver_num += self.driver_table[self.driver_table['status'] == 2].shape[0]
         self.occupancy_rate = self.cumulative_on_trip_driver_num / (
                     (1 + self.current_step) * self.driver_table.shape[0])
-        if env_params['premium_taxi_mode'] == True:
+        if env_params['multi_taxi_mode'] == True:
             # premium driver occupancy rate
             self.cumulative_on_trip_premium_driver_num += \
                 self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
@@ -1246,7 +1257,7 @@ class Simulator:
         self.per_hour_on_trip_driver_num[self.hour] += self.driver_table[self.driver_table['status'] == 2].shape[0]
         self.per_hour_occupancy_rate[self.hour] = self.per_hour_on_trip_driver_num[self.hour] / (
                     (1 + self.current_step_in_hour) * self.driver_table.shape[0])
-        if env_params['premium_taxi_mode'] == True:
+        if env_params['multi_taxi_mode'] == True:
             # calculate premium occupancy rate per hour
             self.per_hour_on_trip_premium_driver_num[self.hour] += \
                 self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
@@ -1295,6 +1306,7 @@ class Simulator:
                 [2, 'driver_2', 12.0, 0.5, False],
             ]
         '''
+        # TODO: switch back to dispatch version
         matched_pair_actual_indexes, matched_itinerary = order_dispatch_broadcasting(wait_requests, driver_table,
                                                                         self.maximal_pickup_distance,
                                                                       self.dispatch_method)
@@ -1325,7 +1337,7 @@ class Simulator:
             # premium: already updated reward based on premium_order is True or False
             # TODO: calculate premium order total reward
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
-            if env_params['premium_taxi_mode'] == True:
+            if env_params['multi_taxi_mode'] == True:
                 self.matched_regular_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == False])
                 self.matched_premium_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == True])
                 self.total_reward_premium += np.sum(df_new_matched_requests[df_new_matched_requests['premium_order'] == True]['designed_reward'].values)

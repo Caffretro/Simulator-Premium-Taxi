@@ -38,10 +38,11 @@ env_params = {
 'price_per_km':5,  # ￥ / kmss
 'road_information_mode':'load',
 'price_increasing_percentage': 0.2,
-'premium_taxi_mode': True,
+'multi_taxi_mode': True,
 'premium_taxi_increasing_coefficient': 1.1, # assume premium taxi is 20% more expensive than normal taxi at first
 'accept_premium_ratio': 0.6847, # 68.4% passengers are willing to take premium taxi
 'premium_driver_num': 30,
+'match_group_sequence': [0, 1, 2], # for passenger groups, 0 for only regular, 1 for only premium, 2 for accept both
 'north_lat': 22.55,
 'south_lat': 22.13,
 'east_lng': 114.42,

@@ -824,6 +824,12 @@ def order_dispatch(wait_requests, driver_table, maximal_pickup_distance=950, dis
 
     if num_wait_request > 0 and num_idle_driver > 0:
         if dispatch_method == 'LD':
+            # TODO: we need to implement the dispatch version of co-existing matching process
+            # there will be 3 types of passengers, and we need to shuffle their matching sequence
+            # we will use config to set the matching group sequence and extract it here
+            first_match_group = int(env_params['match_group_sequence'][0])
+            second_match_group = int(env_params['match_group_sequence'][1])
+            third_match_group = int(env_params['match_group_sequence'][2])
             # generate order driver pairs and corresponding itinerary
             request_array_temp = wait_requests.loc[:, 
                                                    ['origin_lng', 'origin_lat', 'order_id', 'weight']]
