@@ -640,7 +640,7 @@ def transform_regular_price_to_premium_price(price):
     return price * env_params["premium_taxi_increasing_coefficient"]
 
 def filter_order_tolerance(passenger):
-    if passenger['accept_premium']:
+    if passenger['accept_premium'] == 1:
         return (
             passenger['calculated_hk_price'] <= passenger['maximum_price_passenger_can_tolerate']
             and passenger['calculated_hk_premium_price'] <= passenger['maximum_premium_price_passenger_can_tolerate']
@@ -649,7 +649,7 @@ def filter_order_tolerance(passenger):
         return passenger['calculated_hk_price'] <= passenger['maximum_price_passenger_can_tolerate']
     
 def flip_accept_premium_state(passenger):
-    if not passenger['accept_premium']:
+    if passenger['accept_premium'] == 0:
         return False
     # Flip True to False if calculated_hk_premium_price > maximum_premium_price
     # if user cannot tolerate the price, False will be returned, and wait_info will flip True to False correspondingly

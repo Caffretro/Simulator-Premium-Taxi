@@ -102,12 +102,12 @@ class Simulator:
         # order and driver databases
         self.driver_info = pattern.normal_driver_info
         # TODO: modify True/False to 0/1 to match passenger preference group type
-        self.driver_info['premium'] = False
+        self.driver_info['premium'] = 0
         
         # Premium: select  ||'premium_driver_num'||  of the drivers to be premium drivers
         if env_params['multi_taxi_mode'] == True:
             self.driver_info_premium = pattern.driver_info_premium
-            self.driver_info_premium['premium'] = True
+            self.driver_info_premium['premium'] = 1
             # self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
             self.driver_info = pd.concat([self.driver_info, self.driver_info_premium], ignore_index=True)
             # print(self.driver_info['premium'].value_counts())
@@ -195,7 +195,7 @@ class Simulator:
         self.requests = pd.DataFrame(request_list,columns=column_name)
 
         # Premium: Added column for recording whether the order is premium or not
-        self.requests['accept_premium'] = False
+        self.requests['accept_premium'] = 0
 
         # TODO: we need to modify the taxi mode preference here
         # 0: only accept regular; 1: only accept premium; 2: accepts both types of services
@@ -664,13 +664,14 @@ class Simulator:
                     # FIXME: this will be initialized according to our survey.
                     # 0 only take regular, 1 only take premium, 2 take both.
                     # According to survey, 2.7% only regular, 4.0 only premium, assign value using distribution
-                    wait_info['vehicle_type_preference'] = 0
+                    wait_info['vehicle_type_preference'] = np.random.choice(\
+                                [0, 1, 2], len(wait_info), p=passenger_distribution)
                     wait_info['accept_premium'] = np.random.choice(\
-                                [True, False], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
+                                [1, 0], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
                     # print(wait_info['accept_premium'].value_counts())
                 else:
                     wait_info['vehicle_type_preference'] = 2
-                    wait_info['accept_premium'] = False
+                    wait_info['accept_premium'] = 0
                 # transfer_flag_array = np.zeros(len(self.request_database))
                 if self.rl_mode == 'matching':
                     #  rl for matching
@@ -760,6 +761,7 @@ class Simulator:
                 # 2. if the passenger can accept premium taxi, since we want to explore price increase level, there might be some experiment settings that
                     # a lot of premium-acceptable users cannot accept premium taxi prices. In that case, we can transform them to only accept regular taxi
                     # To do that, first compare prices to premium taxi. if they can can tolerate increased premium price,
+                # TODO: since we have 3 types of orders, need to figure out a way to decide which orders can be sent to match with premium taxi
                 wait_info.loc[wait_info['accept_premium'] & ~wait_info.apply(flip_accept_premium_state, axis=1), 'accept_premium'] = False
 
                 # 3. for passengers who accept premium taxi, only keep the orders that satisfy both the tolerance criteria for regular and premium taxi

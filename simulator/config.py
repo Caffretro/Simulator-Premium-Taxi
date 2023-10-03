@@ -72,6 +72,7 @@ price_params_dict = {'short': [0.8393972974276114, 24.794554808478033, 6.8157389
                     'medium_long': [224.0591773703033, 102.0691349634478, 58.902692735890035],
                     'long': [-0.07803413752462217, 266.0959888157933, 53.462130123196246]}
 # premium taxi tolerance price parameters
+passenger_distribution = [0.027, 0.04, 0.933] # 0 for only regular, 1 for only premium, 2 for accept both
 premium_distribution = [0.46, 0.36, 0.16, 0.02]
 premium_increase_rate = [0.1, 0.2, 0.3, 0.4]
 
