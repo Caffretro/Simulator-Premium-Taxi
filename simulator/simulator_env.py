@@ -102,12 +102,12 @@ class Simulator:
         # order and driver databases
         self.driver_info = pattern.normal_driver_info
         # TODO: modify True/False to 0/1 to match passenger preference group type
-        self.driver_info['premium'] = 0
+        self.driver_info['vehicle_type'] = 0
         
         # Premium: select  ||'premium_driver_num'||  of the drivers to be premium drivers
         if env_params['multi_taxi_mode'] == True:
             self.driver_info_premium = pattern.driver_info_premium
-            self.driver_info_premium['premium'] = 1
+            self.driver_info_premium['vehicle_type'] = 1
             # self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
             self.driver_info = pd.concat([self.driver_info, self.driver_info_premium], ignore_index=True)
             # print(self.driver_info['premium'].value_counts())

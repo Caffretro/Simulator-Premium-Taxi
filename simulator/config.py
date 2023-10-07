@@ -41,6 +41,7 @@ env_params = {
 'premium_taxi_increasing_coefficient': 1.1, # assume premium taxi is 20% more expensive than normal taxi at first
 'accept_premium_ratio': 0.6847, # 68.4% passengers are willing to take premium taxi
 'premium_driver_num': 30,
+'premium_driver_ratio': 0.5, # 50% of drivers operate premium taxi
 'match_group_sequence': [0, 1, 2], # for passenger groups, 0 for only regular, 1 for only premium, 2 for accept both
 'north_lat': 22.55,
 'south_lat': 22.13,

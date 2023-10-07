@@ -68,12 +68,12 @@ class SimulatorPattern(object):
             # self.driver_info = self.driver_info.sample(n=env_params['driver_num'],replace=False)
             all_drivers = pd.unique(self.driver_info['driver_id'])
             random.seed(42)
-            if env_params['premium_taxi_mode'] == True:
-                driver_sample_size_all = self.sample_driver_size + env_params['premium_driver_num'] # 9402 for full data
-                drivers_to_keep = random.sample(list(all_drivers), driver_sample_size_all)
+            if env_params['multi_taxi_mode'] == True:
+                drivers_to_keep = random.sample(list(all_drivers), self.sample_driver_size)
                 print(f"keeping {driver_sample_size_all }unique driver_id, {self.sample_driver_size} are normal drivers")
-                normal_drivers = drivers_to_keep[:self.sample_driver_size]
-                premium_drivers = drivers_to_keep[self.sample_driver_size:]
+                regular_driver_num = int(self.sample_driver_size * (1 - env_params['premium_driver_ratio']))
+                normal_drivers = drivers_to_keep[:regular_driver_num]
+                premium_drivers = drivers_to_keep[regular_driver_num:]
 
                 # since this is baseline model, no need to check test or train
                 self.normal_driver_info = self.driver_info[self.driver_info['driver_id'].isin(normal_drivers)]
