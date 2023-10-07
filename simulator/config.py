@@ -25,19 +25,18 @@ env_params = {
 'reposition_mode': '',
 'track_recording_flag' : False,
 'driver_far_matching_cancel_prob_file' : 'driver_far_matching_cancel_prob',
-# 'request_file_name' : 'input1/hongkong_processed_order_new_road_network_for_10000_drivers_800000', #'toy_requests',
 'request_file_name' : 'input1/hongkong_processed_order_new_road_network_60000', #'toy_requests',
 'driver_file_name' : 'input1/hongkong_driver_info_allday',
 'road_network_file_name' : 'road_network_information.pickle',
 'dispatch_method': 'LD', #LD: lagarange decomposition method designed by Peibo Duan
-# 'method': 'instant_reward_no_subway',
 'simulator_mode' : 'toy_mode',
 'experiment_mode' : 'test',
-'driver_num':10000, # 9402 note that changing here is useless, go to main's very top part to modify driver_num array
+'driver_num':750, # 9402 note that changing here is useless, go to main's very top part to modify driver_num array
 'side':10,
 'price_per_km':5,  # ￥ / kmss
 'road_information_mode':'load',
 'price_increasing_percentage': 0.2,
+# premium taxi parameters
 'multi_taxi_mode': True,
 'premium_taxi_increasing_coefficient': 1.1, # assume premium taxi is 20% more expensive than normal taxi at first
 'accept_premium_ratio': 0.6847, # 68.4% passengers are willing to take premium taxi

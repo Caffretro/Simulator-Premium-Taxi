@@ -194,8 +194,6 @@ class Simulator:
                                             np.array([]).astype(float)]  # rl for matching
         self.requests = pd.DataFrame(request_list,columns=column_name)
 
-        # Premium: Added column for recording whether the order is premium or not
-        self.requests['accept_premium'] = 0
 
         # TODO: we need to modify the taxi mode preference here
         # 0: only accept regular; 1: only accept premium; 2: accepts both types of services
@@ -411,8 +409,8 @@ class Simulator:
             remaining_time_for_current_node = combined_itinerary_segment_dis_list.map(lambda x: x[0]).values / self.vehicle_speed * 3600
             self.driver_table.loc[cor_driver[con_remain], 'remaining_time_for_current_node'] = remaining_time_for_current_node
 
-            if self.rl_mode == 'matching':
-                #  rl for matching
+            if self.rl_mode == 'matching' and env_params['experiment_mode'] == 'train':
+                # rl for matching, no need to run in baseline
                 # generate transitions
                 state_array = np.vstack([self.time + np.zeros(new_matched_requests.shape[0]),
                                          self.driver_table.loc[cor_driver[con_remain], 'grid_id'].values]).T
@@ -657,21 +655,17 @@ class Simulator:
                 wait_info['trip_distance'] = trip_distance
                 wait_info['trip_time'] = wait_info['trip_distance'] / self.vehicle_speed * 3600
                 wait_info['itinerary_segment_dis_list'] = itinerary_segment_dis_list
-                #reward_list *= (1 + env_params['price_increasing_percentage'])
+                # reward_list *= (1 + env_params['price_increasing_percentage'])
                 wait_info['designed_reward'] = [calculate_hk_price(dis) for dis in trip_distance]
                 # Premium: set portion of orders to accept premium taxis
                 if env_params['multi_taxi_mode'] == True:
                     # FIXME: this will be initialized according to our survey.
                     # 0 only take regular, 1 only take premium, 2 take both.
-                    # According to survey, 2.7% only regular, 4.0 only premium, assign value using distribution
+                    # According to survey, 2.7% only regular, 4.0% only premium, the rest passengers accepts both type. assign value using distribution
                     wait_info['vehicle_type_preference'] = np.random.choice(\
                                 [0, 1, 2], len(wait_info), p=passenger_distribution)
-                    wait_info['accept_premium'] = np.random.choice(\
-                                [1, 0], len(wait_info), p=[env_params['accept_premium_ratio'], 1 - env_params['accept_premium_ratio']])
-                    # print(wait_info['accept_premium'].value_counts())
                 else:
                     wait_info['vehicle_type_preference'] = 2
-                    wait_info['accept_premium'] = 0
                 # transfer_flag_array = np.zeros(len(self.request_database))
                 if self.rl_mode == 'matching':
                     #  rl for matching
@@ -723,9 +717,11 @@ class Simulator:
                     pick_params = pick_time_params_dict['other']
                     # price_increase_params = price_increase_params_dict['other']
 
+                # non-constant waiting time
                 # wait_info['maximum_wait_time'] = skewed_normal_distribution(wait_params[0],wait_params[1],wait_params[2],wait_params[3],wait_params[4],len(wait_info)) * 60
                 # wait_info['maximum_pickup_time_passenger_can_tolerate'] = skewed_normal_distribution(pick_params[0],pick_params[1],pick_params[2],pick_params[3],pick_params[4],len(wait_info)) * 60
 
+                # constant waiting time
                 wait_info['maximum_wait_time'] = self.maximum_wait_time_mean
                 wait_info['maximum_pickup_time_passenger_can_tolerate'] = 360 # 6 mins
 
@@ -752,21 +748,17 @@ class Simulator:
                 # added maximum_price back   
                 # wait_info['maximum_price_passenger_can_tolerate'] += skewed_normal_distribution(price_increase_params[0],price_increase_params[1],price_increase_params[2],price_increase_params[3],price_increase_params[4],len(wait_info))
                 
-                # Premium: this step will exclude some requests for next round, but we need to figure out a way to design premium-acceptor's price
-                # records regular price here. premium price will be updated in update_info_after_matching_multi_process function
+                # Premium: calculate the regular and premium price for each order, will be used to filter orders and change preference group
                 wait_info['calculated_hk_price'] = wait_info['trip_distance'].apply(calculate_hk_price)
                 wait_info['calculated_hk_premium_price'] = wait_info['calculated_hk_price'].apply(transform_regular_price_to_premium_price)
+                wait_info['accept_type_0'] = wait_info['calculated_hk_price'] <= wait_info['maximum_price_passenger_can_tolerate']
+                wait_info['accept_type_1'] = wait_info['calculated_hk_premium_price'] <= wait_info['maximum_premium_price_passenger_can_tolerate']
                 # Premium: we want to preserve orders based on the following rule:
-                # 1. if the passenger can only accept regular taxi, keep the orders if the price is lower than the maximum price he can tolerate
-                # 2. if the passenger can accept premium taxi, since we want to explore price increase level, there might be some experiment settings that
-                    # a lot of premium-acceptable users cannot accept premium taxi prices. In that case, we can transform them to only accept regular taxi
-                    # To do that, first compare prices to premium taxi. if they can can tolerate increased premium price,
-                # TODO: since we have 3 types of orders, need to figure out a way to decide which orders can be sent to match with premium taxi
-                wait_info.loc[wait_info['accept_premium'] & ~wait_info.apply(flip_accept_premium_state, axis=1), 'accept_premium'] = False
-
-                # 3. for passengers who accept premium taxi, only keep the orders that satisfy both the tolerance criteria for regular and premium taxi
-                    # wait_info = wait_info[(wait_info['maximum_price_passenger_can_tolerate'] >= wait_info['calculated_hk_price']) &
-                    #                        (wait_info['accept_premium'] == True)]. Since they will go two rounds of matching (premium and regular)
+                # 1. for passengers who only accept regular taxi, only keep the orders that satisfy the tolerance criteria for regular taxi
+                # 2. for passengers who only accept premium taxi, only keep the orders that satisfy the tolerance criteria for premium taxi
+                # 3. for passengers who accept both, check which group they can tolerate. if they can only tolerate one group
+                    # then we change their preference group to the one they can tolerate
+                # TODO: in this version, we move the priority group of group 2 to group 0 and group 1. Discuss whether we can move their priority group
                 wait_info = wait_info[wait_info.apply(filter_order_tolerance, axis=1)]
                 self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
 
@@ -1309,9 +1301,10 @@ class Simulator:
             ]
         '''
         # TODO: switch back to dispatch version
-        matched_pair_actual_indexes, matched_itinerary = order_dispatch_broadcasting(wait_requests, driver_table,
-                                                                        self.maximal_pickup_distance,
-                                                                      self.dispatch_method)
+        matched_pair_actual_indexes, matched_itinerary = order_dispatch_multi(wait_requests, driver_table, 
+                                                                    self.maximal_pickup_distance, 
+                                                                    self.dispatch_method, self.method)
+        
         
         # self.matched_requests_num += len(matched_pair_actual_indexes)
         time2 = time.time()
