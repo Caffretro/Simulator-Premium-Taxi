@@ -1,0 +1,1277 @@
+Connected to MongoDB!
+keeping 750unique driver_id, 375 are normal drivers
+0    375
+1    375
+Name: vehicle_type, dtype: int64
+num:  0
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+At step 0
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+5 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+1 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+9 intend to create orders.
+7 actually created orders.
+******************************
+1 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+8 intend to create orders.
+6 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+5 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+5 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+6 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+7 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+1 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+0 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+0 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+2 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+6 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+4 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+9 intend to create orders.
+8 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+1 remaining matched orders.
+6 intend to create orders.
+5 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+0 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+0 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+6 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+0 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+0 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+5 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+8 intend to create orders.
+5 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+5 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+6 intend to create orders.
+5 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+3 dispatched LD matched orders
+2 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+10 intend to create orders.
+9 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+6 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+5 actually created orders.
+******************************
+3 dispatched LD matched orders
+1 remaining matched orders.
+8 intend to create orders.
+7 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+5 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+4 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+0 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+4 actually created orders.
+******************************
+4 dispatched LD matched orders
+1 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+4 dispatched LD matched orders
+1 remaining matched orders.
+4 intend to create orders.
+2 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+4 actually created orders.
+******************************
+3 dispatched LD matched orders
+1 remaining matched orders.
+5 intend to create orders.
+3 actually created orders.
+******************************
+3 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+3 dispatched LD matched orders
+1 remaining matched orders.
+5 intend to create orders.
+5 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+5 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+3 dispatched LD matched orders
+1 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+8 intend to create orders.
+6 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+6 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+7 intend to create orders.
+7 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+5 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+8 intend to create orders.
+6 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+1 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+7 intend to create orders.
+5 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+1 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+1 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+7 intend to create orders.
+4 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+0 actually created orders.
+******************************
+2 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+4 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+3 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+5 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+4 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+7 intend to create orders.
+4 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+0 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+3 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+3 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+5 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+0 actually created orders.
+******************************
+5 dispatched LD matched orders
+1 remaining matched orders.
+7 intend to create orders.
+5 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+6 actually created orders.
+******************************
+5 dispatched LD matched orders
+1 remaining matched orders.
+3 intend to create orders.
+1 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+5 intend to create orders.
+5 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+2 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+4 intend to create orders.
+4 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+1 intend to create orders.
+0 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+0 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+2 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+6 intend to create orders.
+6 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+2 intend to create orders.
+1 actually created orders.
+******************************
+4 dispatched LD matched orders
+0 remaining matched orders.
+3 intend to create orders.
+3 actually created orders.

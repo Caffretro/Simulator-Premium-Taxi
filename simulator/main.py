@@ -93,6 +93,9 @@ if __name__ == "__main__":
                                     pickup_time = 0
                                     waiting_time = 0
 
+                                    # debug block
+                                    matched_request_from_dispatch = 0
+
                                     # load models for broadcasting
 
                                     for date in TEST_DATE_LIST:
@@ -132,18 +135,20 @@ if __name__ == "__main__":
                                         occupancy_rate_no_pickup += simulator.occupancy_rate_no_pickup
                                         pickup_time += simulator.pickup_time / simulator.matched_requests_num
                                         waiting_time += simulator.waiting_time / simulator.matched_requests_num
-                                    
+
+                                        # debug block
+                                        matched_request_from_dispatch += simulator.matched_request_from_dispatch
                                     
                                     epoch += 1
                                     total_reward = total_reward / len(TEST_DATE_LIST)
                                     ax.append(epoch)
                                     ay.append(total_reward)
                                     print("start_time and end_time:", start_time, end_time)
-                                    print("total revenue",total_reward*24)
+                                    print("total revenue",total_reward)
                                     print("total premium reward",total_reward_premium,
-                                          "premium monthly revenue", total_reward_premium * 15 / float(env_params['premium_driver_num']))
+                                          "premium monthly revenue", total_reward_premium * 15 / float(single_driver_num * env_params['premium_driver_ratio']))
                                     print("total normal driver reward", total_reward - total_reward_premium,
-                                          "regular monthly revenue", (total_reward - total_reward_premium) * 15 / single_driver_num)
+                                          "regular monthly revenue", (total_reward - total_reward_premium) * 15 / float(single_driver_num * (1 - env_params['premium_driver_ratio'])))
                                     print(f"total matched premium orders: {simulator.matched_premium_order_count}, regular orders: {simulator.matched_regular_order_count}")
                                     total_request_num = total_request_num / len(TEST_DATE_LIST)
                                     occupancy_rate = occupancy_rate / len(TEST_DATE_LIST)
@@ -159,7 +164,7 @@ if __name__ == "__main__":
                                     waiting_time = waiting_time / len(TEST_DATE_LIST)
                                     print("pick",pickup_time)
                                     print("wait",waiting_time)
-                                    print("matching ratio",matched_request_num/60000) # FIXME: for now let's just use 60000
+                                    print("matching ratio",matched_request_num/total_request_num) # FIXME: for now let's just use 60000
                                     print("ocu",occupancy_rate)
                                     print("ocu for normal taxi", occupancy_rate_normal)
                                     print("ocu for premium taxi", occupancy_rate_premium)
@@ -167,6 +172,8 @@ if __name__ == "__main__":
                                     print("ocu per hour for normal taxi",occupancy_rate_per_hour_normal)
                                     print("ocu per hour for premium taxi",occupancy_rate_per_hour_premium)
                                     print("time used", end_time - start_time)
+                                    # debug block
+                                    print('matched orders from dispatch', matched_request_from_dispatch)
                                     record_array = np.array(
                                         [total_reward, matched_request_num,
                                           long_request_num, matched_long_request_num,

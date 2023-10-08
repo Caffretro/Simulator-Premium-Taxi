@@ -70,8 +70,8 @@ class SimulatorPattern(object):
             random.seed(42)
             if env_params['multi_taxi_mode'] == True:
                 drivers_to_keep = random.sample(list(all_drivers), self.sample_driver_size)
-                print(f"keeping {driver_sample_size_all }unique driver_id, {self.sample_driver_size} are normal drivers")
                 regular_driver_num = int(self.sample_driver_size * (1 - env_params['premium_driver_ratio']))
+                print(f"keeping {self.sample_driver_size}unique driver_id, {regular_driver_num} are normal drivers")
                 normal_drivers = drivers_to_keep[:regular_driver_num]
                 premium_drivers = drivers_to_keep[regular_driver_num:]
 

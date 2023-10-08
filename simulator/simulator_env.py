@@ -110,7 +110,7 @@ class Simulator:
             self.driver_info_premium['vehicle_type'] = 1
             # self.driver_info.loc[self.driver_info.sample(n=env_params['premium_driver_num'], random_state=42).index, 'premium'] = True
             self.driver_info = pd.concat([self.driver_info, self.driver_info_premium], ignore_index=True)
-            # print(self.driver_info['premium'].value_counts())
+            print(self.driver_info['vehicle_type'].value_counts())
         self.driver_info['grid_id'] = self.driver_info['grid_id'].values.astype(int)
         self.request_all = pattern.request_all
         self.request_databases = None
@@ -257,6 +257,9 @@ class Simulator:
         self.hour = 0
         self.current_step_in_hour = 0
 
+        # debug block
+        self.matched_request_from_dispatch = 0
+
     def reset(self):
         self.initial_base_tables()
 
@@ -302,12 +305,13 @@ class Simulator:
         matched_order_id_list = matched_pair_index_df['order_id'].values.tolist()
         con_matched = self.wait_requests['order_id'].isin(matched_order_id_list)
         con_keep_wait = self.wait_requests['wait_time'] <= self.wait_requests['maximum_wait_time']
+        
 
         # price and pickup time info which used to judge whether cancel the order-driver pair
         matched_itinerary_df['pickup_time'] = matched_itinerary_df['pickup_distance'].values / self.vehicle_speed * 3600
-
         # extract the order is matched
         df_matched = self.wait_requests[con_matched].reset_index(drop=True)
+
         if df_matched.shape[0] > 0:
             # if there are matched orders, update the driver table
             idle_driver_table = self.driver_table[(self.driver_table['status'] == 0) | (self.driver_table['status'] == 4)]
@@ -330,6 +334,11 @@ class Simulator:
             # matched_itinerary_df['pickup_time'].values
             con_passenge_keep_wait = df_matched['maximum_pickup_time_passenger_can_tolerate'].values > \
                                                         matched_itinerary_df['pickup_time'].values
+            # unique_values, counts = np.unique(con_passenge_keep_wait, return_counts=True)
+
+            # # Print the value counts
+            # for value, count in zip(unique_values, counts):
+            #     print(f"{value}: {count}")
 
             # passengers may cancel, drivers may also cancel. we only record uncancelled matches
             con_remain = con_driver_remain & con_passenge_keep_wait
@@ -355,8 +364,8 @@ class Simulator:
             # Premium: record if the new_matched_requests are premium orders, containing True or False
             new_matched_requests['premium_order'] = matched_pair_index_df[con_remain]['premium_order'].values
             # Premium: update premium orders' designed_reward
-            new_matched_requests.loc[new_matched_requests['premium_order'] == True, 'designed_reward'] = \
-                new_matched_requests[new_matched_requests['premium_order'] == True]['designed_reward'].apply(transform_regular_price_to_premium_price)
+            new_matched_requests.loc[new_matched_requests['premium_order'] == 1, 'designed_reward'] = \
+                new_matched_requests[new_matched_requests['premium_order'] == 1]['designed_reward'].apply(transform_regular_price_to_premium_price)
             self.total_service_time += np.sum(new_matched_requests['trip_time'].values)
             extra_time = new_matched_requests['t_end'].values - self.t_end
             extra_time[extra_time < 0] = 0
@@ -366,7 +375,7 @@ class Simulator:
             # new_matched_requests['designed_reward'] = 2.5 + 0.5 * int(max(0,matched_itinerary_df[con_remain]['trip_distance_distance'].values.all()-322)/322)
             # print(new_matched_requests['designed_reward'])
             # sys.exit()
-
+            # print(f"{len(df_matched)} incoming orders, {len(new_matched_requests)} keep waiting orders")
             # driver not cancelled
             for grid_start in new_matched_requests['dest_grid_id'].values:
                 if grid_start not in self.grid_value.keys():
@@ -759,7 +768,13 @@ class Simulator:
                 # 3. for passengers who accept both, check which group they can tolerate. if they can only tolerate one group
                     # then we change their preference group to the one they can tolerate
                 # TODO: in this version, we move the priority group of group 2 to group 0 and group 1. Discuss whether we can move their priority group
-                wait_info = wait_info[wait_info.apply(filter_order_tolerance, axis=1)]
+                # TODO: delete print
+                # print(f"{len(wait_info)} intend to create orders.")
+        
+                wait_info = wait_info.apply(filter_order_tolerance, axis=1)
+                wait_info = wait_info[wait_info['keep_order']]
+                # TODO: delete print
+                # print(f"{len(wait_info)} actually created orders.")
                 self.wait_requests = pd.concat([self.wait_requests, wait_info], ignore_index=True)
 
                 # statistics
@@ -1231,18 +1246,18 @@ class Simulator:
         if env_params['multi_taxi_mode'] == True:
             # premium driver occupancy rate
             self.cumulative_on_trip_premium_driver_num += \
-                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['vehicle_type'] == 1)].shape[0]
             self.cumulative_on_trip_premium_driver_num += \
-                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == True)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['vehicle_type'] == 1)].shape[0]
             self.occupancy_rate_premium = self.cumulative_on_trip_premium_driver_num / (
-                        (1 + self.current_step) * self.driver_table[self.driver_table['premium'] == True].shape[0])
+                        (1 + self.current_step) * self.driver_table[self.driver_table['vehicle_type'] == 1].shape[0])
             # normal driver occupancy rate
             self.cumulative_on_trip_normal_driver_num += \
-                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == False)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['vehicle_type'] == 0)].shape[0]
             self.cumulative_on_trip_normal_driver_num += \
-                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == False)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['vehicle_type'] == 0)].shape[0]
             self.occupancy_rate_normal = self.cumulative_on_trip_normal_driver_num / (
-                        (1 + self.current_step) * self.driver_table[self.driver_table['premium'] == False].shape[0])
+                        (1 + self.current_step) * self.driver_table[self.driver_table['vehicle_type'] == 0].shape[0])
             
         # per-hour statistics
 
@@ -1254,18 +1269,18 @@ class Simulator:
         if env_params['multi_taxi_mode'] == True:
             # calculate premium occupancy rate per hour
             self.per_hour_on_trip_premium_driver_num[self.hour] += \
-                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == True)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['vehicle_type'] == 1)].shape[0]
             self.per_hour_on_trip_premium_driver_num[self.hour] += \
-                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == True)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['vehicle_type'] == 1)].shape[0]
             self.per_hour_occupancy_rate_premium[self.hour] = self.per_hour_on_trip_premium_driver_num[self.hour] / (
-                        (1 + self.current_step_in_hour) * self.driver_table[self.driver_table['premium'] == True].shape[0])
+                        (1 + self.current_step_in_hour) * self.driver_table[self.driver_table['vehicle_type'] == 1].shape[0])
             # calculate normal driver occupancy rate per hour
             self.per_hour_on_trip_normal_driver_num[self.hour] += \
-                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['premium'] == False)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 1) & (self.driver_table['vehicle_type'] == 0)].shape[0]
             self.per_hour_on_trip_normal_driver_num[self.hour] += \
-                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['premium'] == False)].shape[0]
+                self.driver_table[(self.driver_table['status'] == 2) & (self.driver_table['vehicle_type'] == 0)].shape[0]
             self.per_hour_occupancy_rate_normal[self.hour] = self.per_hour_on_trip_normal_driver_num[self.hour] / (
-                        (1 + self.current_step_in_hour) * self.driver_table[self.driver_table['premium'] == False].shape[0])
+                        (1 + self.current_step_in_hour) * self.driver_table[self.driver_table['vehicle_type'] == 0].shape[0])
 
     def step(self, score_agent={}, epsilon=0): # rl for matching
         """
@@ -1296,15 +1311,17 @@ class Simulator:
             result of matched_pair_actual_indexes look like this:
             order_id, driver_id, reward, distance, premium_order
             [
-                [1, 'driver_1', 10.0, 0.5, True],
-                [2, 'driver_2', 12.0, 0.5, False],
+                [1, 'driver_1', 10.0, 0.5, 1],
+                [2, 'driver_2', 12.0, 0.5, 0],
             ]
         '''
-        # TODO: switch back to dispatch version
         matched_pair_actual_indexes, matched_itinerary = order_dispatch_multi(wait_requests, driver_table, 
                                                                     self.maximal_pickup_distance, 
                                                                     self.dispatch_method, self.method)
-        
+        # TODO: delete print
+        self.matched_request_from_dispatch += len(matched_pair_actual_indexes)
+        # print("**" * 15)
+        # print(f"{len(matched_pair_actual_indexes)} dispatched LD matched orders")
         
         # self.matched_requests_num += len(matched_pair_actual_indexes)
         time2 = time.time()
@@ -1318,6 +1335,10 @@ class Simulator:
         # premium: use df_new_matched_requests['premium_order'] to check a ready-to-bootstrap order is premium or not
         df_new_matched_requests, df_update_wait_requests = self.update_info_after_matching_multi_process(
             matched_pair_actual_indexes, matched_itinerary)
+        
+        # TODO: delete print
+        # print(f"{len(df_new_matched_requests)} remaining matched orders.")
+        
         # print('Number of requests waiting more than 300 secs:', len(df_update_wait_requests[df_update_wait_requests['wait_time'] > 300]))
         if isinstance(self.record,str):
             self.record = df_new_matched_requests
@@ -1333,9 +1354,10 @@ class Simulator:
             # TODO: calculate premium order total reward
             self.total_reward += np.sum(df_new_matched_requests['designed_reward'].values)
             if env_params['multi_taxi_mode'] == True:
-                self.matched_regular_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == False])
-                self.matched_premium_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == True])
-                self.total_reward_premium += np.sum(df_new_matched_requests[df_new_matched_requests['premium_order'] == True]['designed_reward'].values)
+                self.matched_regular_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == 0])
+                self.matched_premium_order_count += len(df_new_matched_requests[df_new_matched_requests['premium_order'] == 1])
+                self.total_reward_premium += np.sum(df_new_matched_requests[df_new_matched_requests['premium_order'] == 1]['designed_reward'].values)
+
             else:
                 self.matched_regular_order_count += len(df_new_matched_requests)
 

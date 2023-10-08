@@ -640,26 +640,47 @@ def transform_regular_price_to_premium_price(price):
     return price * env_params["premium_taxi_increasing_coefficient"]
 
 def filter_order_tolerance(passenger):
-    # accept regular and accept premium is already true and false, we modify priority group here.
+    # # accept regular and accept premium is already true and false, we modify priority group here.
+    # if passenger['vehicle_type_preference'] == 0:  # Only regular
+    #     return passenger['accept_type_0']
+    # elif passenger['vehicle_type_preference'] == 1:  # Only premium
+    #     return passenger['accept_type_1']
+    # else:  # Both types
+    #     # only tolerate regular order price
+    #     if passenger['accept_type_0'] and not passenger['accept_type_1']:
+    #         passenger['vehicle_type_preference'] = 0
+    #         return True
+    #     # only tolerate premium order price
+    #     elif not passenger['accept_type_0'] and passenger['accept_type_1']:
+    #         passenger['vehicle_type_preference'] = 1
+    #         return True
+    #     # tolerate both regular and premium order price, keep its matching group
+    #     elif passenger['accept_type_0'] and passenger['accept_type_1']:
+    #         return True
+    #     # tolerate neither regular nor premium order price, order will be removed
+    #     else:
+    #         return False
+        
     if passenger['vehicle_type_preference'] == 0:  # Only regular
-        return passenger['accept_regular']
+        passenger['keep_order'] = passenger['accept_type_0']
     elif passenger['vehicle_type_preference'] == 1:  # Only premium
-        return passenger['accept_premium']
+        passenger['keep_order'] = passenger['accept_type_1']
     else:  # Both types
         # only tolerate regular order price
-        if passenger['accept_regular'] and not passenger['accept_premium']:
+        if passenger['accept_type_0'] and not passenger['accept_type_1']:
             passenger['vehicle_type_preference'] = 0
-            return True
+            passenger['keep_order'] = True
         # only tolerate premium order price
-        elif not passenger['accept_regular'] and passenger['accept_premium']:
+        elif not passenger['accept_type_0'] and passenger['accept_type_1']:
             passenger['vehicle_type_preference'] = 1
-            return True
+            passenger['keep_order'] = True
         # tolerate both regular and premium order price, keep its matching group
-        elif passenger['accept_regular'] and passenger['accept_premium']:
-            return True
+        elif passenger['accept_type_0'] and passenger['accept_type_1']:
+            passenger['keep_order'] = True
         # tolerate neither regular nor premium order price, order will be removed
         else:
-            return False
+            passenger['keep_order'] = False
+    return passenger
     
 def flip_accept_premium_state(passenger):
     if passenger['accept_premium'] == 0:
@@ -865,7 +886,7 @@ def order_dispatch_multi(wait_requests, driver_table, maximal_pickup_distance=95
             driver_loc_array_group_1 = np.tile(driver_loc_array_temp_group_1.values, (num_wait_request_group_1, 1))
             dis_array_group_1 = distance_array(request_array_group_1[:, :2], driver_loc_array_group_1[:, :2])
             flag_group_1 = np.where(dis_array_group_1 <= maximal_pickup_distance)[0]
-            matched_pair_actual_indexs_group_1 = match_dispatch_orders_LD(flag_group_1, request_array_group_1, 
+            matched_pair_actual_indexs_group_1 = match_dispatch_orders_LD(flag_group_1, dis_array_group_1, request_array_group_1, 
                                                 driver_loc_array_group_1, request_array_temp_group_1, 
                                                 driver_loc_array_temp_group_1, first_match_group, driver_id_to_vehicle_type)
             matched_order_ids_combined.extend([item[0] for item in matched_pair_actual_indexs_group_1])
@@ -891,7 +912,7 @@ def order_dispatch_multi(wait_requests, driver_table, maximal_pickup_distance=95
             driver_loc_array_group_2 = np.tile(driver_loc_array_temp_group_2.values, (num_wait_request_group_2, 1))
             dis_array_group_2 = distance_array(request_array_group_2[:, :2], driver_loc_array_group_2[:, :2])
             flag_group_2 = np.where(dis_array_group_2 <= maximal_pickup_distance)[0]
-            matched_pair_actual_indexs_group_2 = match_dispatch_orders_LD(flag_group_2, request_array_group_2, 
+            matched_pair_actual_indexs_group_2 = match_dispatch_orders_LD(flag_group_2, dis_array_group_2, request_array_group_2, 
                                                 driver_loc_array_group_2, request_array_temp_group_2, 
                                                 driver_loc_array_temp_group_2, second_match_group, driver_id_to_vehicle_type)
             matched_order_ids_combined.extend([item[0] for item in matched_pair_actual_indexs_group_2])
@@ -915,7 +936,7 @@ def order_dispatch_multi(wait_requests, driver_table, maximal_pickup_distance=95
             driver_loc_array_group_3 = np.tile(driver_loc_array_temp_group_3.values, (num_wait_request_group_3, 1))
             dis_array_group_3 = distance_array(request_array_group_3[:, :2], driver_loc_array_group_3[:, :2])
             flag_group_3 = np.where(dis_array_group_3 <= maximal_pickup_distance)[0]
-            matched_pair_actual_indexs_group_3 = match_dispatch_orders_LD(flag_group_3, request_array_group_3, 
+            matched_pair_actual_indexs_group_3 = match_dispatch_orders_LD(flag_group_3, dis_array_group_3, request_array_group_3, 
                                                 driver_loc_array_group_3, request_array_temp_group_2, 
                                                 driver_loc_array_temp_group_3, third_match_group, driver_id_to_vehicle_type)
             matched_order_ids_combined.extend([item[0] for item in matched_pair_actual_indexs_group_3])
@@ -947,10 +968,9 @@ def order_dispatch_multi(wait_requests, driver_table, maximal_pickup_distance=95
                     driver_loc_array_new, request_array_new, mode=env_params['pickup_mode'])
 
                 matched_itinerary = [itinerary_node_list, itinerary_segment_dis_list, dis_array]
-
     return matched_pair_actual_indexs, np.array(matched_itinerary)
 
-def match_dispatch_orders_LD(flag, request_array, driver_loc_array, request_array_temp, driver_loc_array_temp, match_group, driver_id_to_vehicle_type):
+def match_dispatch_orders_LD(flag, dis_array, request_array, driver_loc_array, request_array_temp, driver_loc_array_temp, match_group, driver_id_to_vehicle_type):
     if len(flag) > 0:
         '''
             The return value of the given code is a list of dispatch actions, where each action is a list containing the following elements:
@@ -972,15 +992,10 @@ def match_dispatch_orders_LD(flag, request_array, driver_loc_array, request_arra
             [request_array[flag, 2], driver_loc_array[flag, 2], request_array[flag, 3], dis_array[flag]]).T
         matched_pair_actual_indexs = LD(order_driver_pair.tolist())
         # attach match_group to the end of each order
-        # we only need to go through drivers if the match_group is 2 (everyone matches everyone)
-        if match_group != 2: 
-            for matched_order in matched_pair_actual_indexs:
-                matched_order.append(int(match_group))
-        else:
-            for matched_order in matched_pair_actual_indexs:
-                driver_id = matched_order[1]
-                vehicle_type = driver_id_to_vehicle_type[driver_id]
-                matched_order.append(vehicle_type)
+        for matched_order in matched_pair_actual_indexs:
+            driver_id = matched_order[1]
+            vehicle_type = driver_id_to_vehicle_type[driver_id]
+            matched_order.append(vehicle_type)
         '''
             after processing, it looks like this:
 
